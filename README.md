@@ -6,7 +6,7 @@
 
 Karpathy's [autoresearch](https://github.com/karpathy/autoresearch) proved the formula: agent + fitness function + loop = overnight breakthroughs. But autoresearch only works when you already have a scalar metric. Loss goes down, paper gets better. Most software isn't like that. You have to *construct* the metric before you can optimize it.
 
-GOAL.md is the pattern for doing that. One file you drop into a repo that turns a coding agent into an autonomous improver.
+GOAL.md is the pattern for doing that. One file you drop into a repo that turns a coding agent into an autonomous improver. This repo itself is designed to be consumed by agents — the template is a prompt, the examples are few-shot training data, and the CLAUDE.md teaches an agent how to write a good GOAL.md for *your* project.
 
 ## How I stumbled into this
 
@@ -152,14 +152,14 @@ You don't need one for a single well-defined change ("add a dark mode toggle") o
 
 ## Get started
 
-The fastest way: just tell Claude.
+The fastest way: point an agent at this repo and let it do the work.
 
 ```
 Look at github.com/jmilinovich/goal-md — read the template and examples.
 Then write me a GOAL.md for this repo and start working on it.
 ```
 
-It reads the examples, pattern-matches your codebase, writes the fitness function, and starts the loop. That's the whole point — this isn't a spec you have to study, it's a file format an agent already knows how to use.
+The agent reads the template as a prompt and the examples as few-shot demonstrations. It pattern-matches your codebase against them, writes the fitness function, and starts the loop. You don't need to understand the pattern yourself — you just need to point an agent here and let it learn from the examples the same way you'd give a junior engineer a style guide and three PRs to reference.
 
 Or do it manually:
 
@@ -170,6 +170,8 @@ Or do it manually:
 
 ## Real examples
 
+These aren't just documentation — they're the few-shot examples an agent uses to pattern-match when writing a GOAL.md for your project. Each one demonstrates a different domain, metric style, and operating mode so the agent has enough variety to generalize.
+
 | Project | Domain | Metric | Mode | Link |
 |---------|--------|--------|------|------|
 | browser-grid | Playwright plugin | 10-criterion checklist | Converge | [`examples/browser-grid.md`](examples/browser-grid.md) |
@@ -177,7 +179,7 @@ Or do it manually:
 | perf-optimization | Web service perf | Latency/throughput composite (wrk + k6) | Continuous | [`examples/perf-optimization.md`](examples/perf-optimization.md) |
 | docs-quality | React component lib docs | Dual: docs quality + instrument quality | Split/Converge | [`examples/docs-quality.md`](examples/docs-quality.md) |
 
-More examples welcome. Open a PR.
+More examples welcome. Open a PR — more variety here means better GOAL.md files for everyone's projects.
 
 ## License
 
