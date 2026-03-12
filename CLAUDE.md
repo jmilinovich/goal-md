@@ -35,6 +35,22 @@ This is the primary use case. When a user says "write me a GOAL.md for my projec
 - There's risk of gaming the metric
 - The measurement infrastructure doesn't exist yet
 
+## Worked Example: Bootstrapping a GOAL.md
+
+User says: "Write me a GOAL.md for this Express API repo."
+
+Here's your internal sequence — not what you say, what you *do*:
+
+1. **Scan the codebase.** `find src/ -name '*.ts'` → 45 route handlers across 8 routers. `package.json` has jest. No perf benchmarks, no load tests, no OpenAPI spec.
+2. **Run what exists.** `npx jest --coverage --json 2>/dev/null` → works. Coverage summary: 62% lines, 41% branches. Tests pass (38/38).
+3. **Identify the optimization target.** Three candidates: coverage (measurable, improvable), API docs (no scoring infra), response times (no benchmarks). Coverage wins — it already has a number.
+4. **Write the scoring script.** A 6-line node script that runs jest with `--coverage --json`, extracts `lines.pct` from the JSON, and prints the number. Save as `scripts/score.sh`. Run it: prints `62`.
+5. **Write the GOAL.md.** Converge mode, target 85%. Action catalog: "Add tests for uncovered route handlers (~2pts each)", "Add branch coverage for error paths (~1pt each)", "Add integration tests for auth middleware (~3pts)". Constraint: never mock the database layer (they use a real test DB).
+6. **Establish baseline.** Run the script, record `baseline: 62` and `target: 85` in the file.
+7. **Start the loop** if the user wants it. First action: pick the highest-impact untested router, write tests, re-score.
+
+The whole bootstrap takes one pass through the codebase. The GOAL.md is runnable by the next session with zero context.
+
 ## If you're working on this repo itself
 
 ### Commands
