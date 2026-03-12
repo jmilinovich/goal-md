@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="580" height="180" viewBox="0 0 580 180">
+  <style>
+    .bg { fill: #1e1e2e; }
+    .node { fill: #313244; stroke: #89b4fa; stroke-width: 2; rx: 8; }
+    .node-final { fill: #313244; stroke: #a6e3a1; stroke-width: 2; rx: 8; }
+    .name { fill: #cdd6f4; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; text-anchor: middle; font-weight: bold; }
+    .desc { fill: #6c7086; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 9px; text-anchor: middle; }
+    .plus { fill: #89b4fa; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 10px; text-anchor: middle; }
+    .arrow { stroke: #6c7086; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+    .timeline { stroke: #45475a; stroke-width: 1; }
+    .year { fill: #585b70; font-family: 'SF Mono', monospace; font-size: 9px; text-anchor: middle; }
+    .title { fill: #89b4fa; font-family: 'SF Mono', monospace; font-size: 11px; text-anchor: middle; opacity: 0.7; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <polygon points="0 0, 7 2.5, 0 5" fill="#6c7086" />
+    </marker>
+  </defs>
+
+  <rect class="bg" width="580" height="180" rx="12" />
+
+  <!-- Title -->
+  <text class="title" x="290" y="22">lineage</text>
+
+  <!-- Timeline line -->
+  <line class="timeline" x1="40" y1="80" x2="540" y2="80" />
+
+  <!-- Node 1: autoresearch -->
+  <rect class="node" x="28" y="40" width="150" height="36" />
+  <text class="name" x="103" y="62">autoresearch</text>
+  <!-- Dot on timeline -->
+  <circle cx="103" cy="80" r="4" fill="#89b4fa" />
+  <!-- What it added -->
+  <text class="plus" x="103" y="108">fitness function</text>
+  <text class="plus" x="103" y="122">+ loop</text>
+
+  <!-- Arrow 1->2 -->
+  <path class="arrow" d="M 178 58 L 200 58" />
+
+  <!-- Node 2: autoresearch-anything -->
+  <rect class="node" x="202" y="40" width="176" height="36" />
+  <text class="name" x="290" y="62">autoresearch-anything</text>
+  <circle cx="290" cy="80" r="4" fill="#89b4fa" />
+  <text class="plus" x="290" y="108">generalized</text>
+  <text class="plus" x="290" y="122">metric</text>
+
+  <!-- Arrow 2->3 -->
+  <path class="arrow" d="M 378 58 L 400 58" />
+
+  <!-- Node 3: GOAL.md -->
+  <rect class="node-final" x="402" y="40" width="150" height="36" />
+  <text class="name" x="477" y="62" style="fill: #a6e3a1">GOAL.md</text>
+  <circle cx="477" cy="80" r="5" fill="#a6e3a1" />
+  <text class="plus" x="477" y="108">+ dual scores</text>
+  <text class="plus" x="477" y="122">+ action catalog</text>
+  <text class="plus" x="477" y="136">+ modes</text>
+
+  <!-- Year markers -->
+  <text class="year" x="103" y="160">2024</text>
+  <text class="year" x="290" y="160">2024</text>
+  <text class="year" x="477" y="160">2025</text>
+</svg>
