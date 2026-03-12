@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="580" height="240" viewBox="0 0 580 240">
+  <style>
+    .bg { fill: #1e1e2e; }
+    .title { fill: #89b4fa; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; text-anchor: middle; opacity: 0.7; }
+    .mode-name { fill: #cdd6f4; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; font-weight: bold; }
+    .mode-desc { fill: #6c7086; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 9px; }
+    .axis { stroke: #45475a; stroke-width: 1; }
+    .line-converge { stroke: #a6e3a1; stroke-width: 2; fill: none; }
+    .line-continuous { stroke: #89b4fa; stroke-width: 2; fill: none; }
+    .line-supervised { stroke: #facc15; stroke-width: 2; fill: none; }
+    .threshold { stroke: #a6e3a1; stroke-width: 1; stroke-dasharray: 4,3; opacity: 0.5; }
+    .threshold-label { fill: #a6e3a1; font-family: 'SF Mono', monospace; font-size: 8px; opacity: 0.6; }
+    .zzz { fill: #89b4fa; font-family: 'SF Mono', monospace; font-size: 10px; opacity: 0.6; }
+    .pause { fill: #facc15; font-family: 'SF Mono', monospace; font-size: 16px; }
+    .pause-sm { fill: #facc15; font-family: 'SF Mono', monospace; font-size: 8px; opacity: 0.7; }
+    .dot { r: 3; }
+  </style>
+
+  <rect class="bg" width="580" height="240" rx="12" />
+
+  <!-- Title -->
+  <text class="title" x="290" y="22">operating modes</text>
+
+  <!-- === CONVERGE === -->
+  <!-- Label -->
+  <text class="mode-name" x="22" y="55" fill="#a6e3a1">Converge</text>
+  <text class="mode-desc" x="22" y="68">hit target, stop</text>
+
+  <!-- Chart area: x=20..170, y=78..148 -->
+  <line class="axis" x1="20" y1="148" x2="175" y2="148" />
+  <line class="axis" x1="20" y1="78" x2="20" y2="148" />
+
+  <!-- Threshold line -->
+  <line class="threshold" x1="20" y1="88" x2="175" y2="88" />
+  <text class="threshold-label" x="178" y="91">80</text>
+
+  <!-- Score line climbing then flattening at threshold -->
+  <polyline class="line-converge" points="24,142 44,134 64,124 84,112 104,100 124,92 140,88" />
+  <!-- Stop marker -->
+  <circle cx="140" cy="88" r="4" fill="#a6e3a1" />
+  <text fill="#a6e3a1" x="148" y="84" style="font-family: 'SF Mono', monospace; font-size: 9px">done</text>
+
+
+  <!-- === CONTINUOUS === -->
+  <text class="mode-name" x="212" y="55" fill="#89b4fa">Continuous</text>
+  <text class="mode-desc" x="212" y="68">run overnight</text>
+
+  <!-- Chart area: x=210..365, y=78..148 -->
+  <line class="axis" x1="210" y1="148" x2="365" y2="148" />
+  <line class="axis" x1="210" y1="78" x2="210" y2="148" />
+
+  <!-- Score line always climbing -->
+  <polyline class="line-continuous" points="214,142 234,136 254,128 274,120 294,114 314,108 334,104 354,100" />
+  <!-- Dashed continuation -->
+  <line x1="354" y1="100" x2="370" y2="97" stroke="#89b4fa" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.4" />
+
+  <!-- zzz annotation -->
+  <text class="zzz" x="340" y="92">zzz</text>
+
+
+  <!-- === SUPERVISED === -->
+  <text class="mode-name" x="402" y="55" fill="#facc15">Supervised</text>
+  <text class="mode-desc" x="402" y="68">human checkpoints</text>
+
+  <!-- Chart area: x=400..555, y=78..148 -->
+  <line class="axis" x1="400" y1="148" x2="560" y2="148" />
+  <line class="axis" x1="400" y1="78" x2="400" y2="148" />
+
+  <!-- Score line with pauses (flat segments = human review) -->
+  <polyline class="line-supervised" points="404,142 420,134 436,126 448,126" />
+  <polyline class="line-supervised" points="460,126 476,118 492,112 504,112" />
+  <polyline class="line-supervised" points="516,112 532,106 548,100" />
+
+  <!-- Pause markers (vertical bars at flat segments) -->
+  <line x1="448" y1="120" x2="448" y2="132" stroke="#facc15" stroke-width="2" opacity="0.6" />
+  <line x1="454" y1="120" x2="454" y2="132" stroke="#facc15" stroke-width="2" opacity="0.6" />
+  <text class="pause-sm" x="451" y="143">review</text>
+
+  <line x1="504" y1="106" x2="504" y2="118" stroke="#facc15" stroke-width="2" opacity="0.6" />
+  <line x1="510" y1="106" x2="510" y2="118" stroke="#facc15" stroke-width="2" opacity="0.6" />
+  <text class="pause-sm" x="507" y="129">review</text>
+
+
+  <!-- Bottom summary bar -->
+  <line x1="30" y1="172" x2="550" y2="172" stroke="#45475a" stroke-width="1" stroke-dasharray="4,4" />
+
+  <text class="mode-desc" x="95" y="192" style="text-anchor: middle">
+    <tspan fill="#a6e3a1">Converge:</tspan>
+    <tspan fill="#6c7086"> score >= N</tspan>
+  </text>
+  <text class="mode-desc" x="290" y="192" style="text-anchor: middle">
+    <tspan fill="#89b4fa">Continuous:</tspan>
+    <tspan fill="#6c7086"> keep improving</tspan>
+  </text>
+  <text class="mode-desc" x="480" y="192" style="text-anchor: middle">
+    <tspan fill="#facc15">Supervised:</tspan>
+    <tspan fill="#6c7086"> human in loop</tspan>
+  </text>
+
+  <text class="mode-desc" x="95" y="206" style="text-anchor: middle; fill: #585b70">agent stops itself</text>
+  <text class="mode-desc" x="290" y="206" style="text-anchor: middle; fill: #585b70">runs unattended</text>
+  <text class="mode-desc" x="480" y="206" style="text-anchor: middle; fill: #585b70">pauses for approval</text>
+</svg>
