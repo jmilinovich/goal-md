@@ -15,7 +15,7 @@ This is the primary use case. When a user says "write me a GOAL.md for my projec
 3. Read the user's codebase to understand what "better" means for them
 4. Write a GOAL.md that includes all five elements:
    - **Fitness function** — a script they can run that outputs a number. If one doesn't exist, write it.
-   - **Improvement loop** — measure → diagnose → act → verify → keep or revert
+   - **Improvement loop** — measure → diagnose → act → verify → keep or revert → log
    - **Action catalog** — concrete moves with estimated point impact
    - **Operating mode** — converge (stop when done), continuous (run forever), or supervised (pause at gates)
    - **Constraints** — what the agent must never do

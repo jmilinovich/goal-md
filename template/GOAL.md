@@ -86,6 +86,7 @@ Stop and report when ANY of:
 
 ```
 repeat:
+  0. Read iterations.jsonl if it exists — note what's been tried and what worked
   1. [measure command] > /tmp/before.json
   2. Read scores and component breakdowns
   3. Pick highest-impact action from Action Catalog
@@ -94,7 +95,8 @@ repeat:
   6. [measure command] > /tmp/after.json
   7. Compare: if improved without regression, commit
   8. If regressed or unchanged, revert
-  9. Continue
+  9. Append to iterations.jsonl: before/after scores, action taken, result, one-sentence note
+  10. Continue
 ```
 
 #### If using dual scores:
@@ -109,6 +111,19 @@ Insert a decision step between steps 2 and 3 above:
 > If [instrument metric] >= [threshold]: work on [outcome metric].
 
 Commit messages: `[S:NN→NN] component: what you did`
+
+## Iteration Log
+
+<!-- Optional — delete this section if unwanted.
+     Append one JSONL line per iteration to iterations.jsonl in your repo root.
+     Future agents read this to avoid repeating failed actions and to build on what worked. -->
+
+File: `iterations.jsonl` (append-only, one JSON object per line)
+
+```jsonl
+{"iteration":1,"before":62,"after":65,"action":"Add tests for /api/users","result":"kept","note":"3 new integration tests, coverage +3%"}
+{"iteration":2,"before":65,"after":65,"action":"Refactor auth middleware","result":"reverted","note":"broke session handling, no score change"}
+```
 
 ## Action Catalog
 

@@ -14,9 +14,10 @@ JSON_MODE=false
 score=0
 max=0
 details=()
+feedback=()
 
 check() {
-  local points=$1 name=$2 result=$3
+  local points=$1 name=$2 result=$3 hint="${4:-}"
   max=$((max + points))
   if [[ "$result" == "pass" ]]; then
     score=$((score + points))
@@ -25,8 +26,10 @@ check() {
     local partial=$((points / 2))
     score=$((score + partial))
     details+=("{\"name\":\"$name\",\"points\":$partial,\"max\":$points,\"status\":\"partial\"}")
+    [[ -n "$hint" ]] && feedback+=("$name (partial): $hint")
   else
     details+=("{\"name\":\"$name\",\"points\":0,\"max\":$points,\"status\":\"fail\"}")
+    [[ -n "$hint" ]] && feedback+=("$name: $hint")
   fi
 }
 
@@ -42,9 +45,9 @@ done
 if [[ $elements_found -eq 5 ]]; then
   check 10 "five-elements-defined" "pass"
 elif [[ $elements_found -ge 3 ]]; then
-  check 10 "five-elements-defined" "partial"
+  check 10 "five-elements-defined" "partial" "README mentions only $elements_found/5 elements — add missing ones"
 else
-  check 10 "five-elements-defined" "fail"
+  check 10 "five-elements-defined" "fail" "README must mention all 5 elements: fitness function, improvement loop, action catalog, operating mode, constraints"
 fi
 
 # Prior art and lineage
@@ -52,7 +55,7 @@ if grep -q "## Prior art" "$REPO_ROOT/README.md" 2>/dev/null || \
    grep -q "Eval-Driven Development" "$REPO_ROOT/README.md" 2>/dev/null; then
   check 5 "prior-art-section" "pass"
 else
-  check 5 "prior-art-section" "fail"
+  check 5 "prior-art-section" "fail" "Add a prior art section referencing Eval-Driven Development or autoresearch lineage"
 fi
 
 # Mutability + operating modes defined
@@ -63,16 +66,16 @@ done
 if [[ $modes_found -eq 6 ]]; then
   check 5 "all-modes-defined" "pass"
 elif [[ $modes_found -ge 4 ]]; then
-  check 5 "all-modes-defined" "partial"
+  check 5 "all-modes-defined" "partial" "README defines $modes_found/6 modes — add Locked, Split, Open, Converge, Continuous, Supervised"
 else
-  check 5 "all-modes-defined" "fail"
+  check 5 "all-modes-defined" "fail" "README must define all 6 modes: Locked, Split, Open, Converge, Continuous, Supervised"
 fi
 
 # When to use / when not to
 if grep -q "## When you need" "$REPO_ROOT/README.md" 2>/dev/null; then
   check 5 "when-to-use" "pass"
 else
-  check 5 "when-to-use" "fail"
+  check 5 "when-to-use" "fail" "Add a '## When you need' section explaining when GOAL.md is appropriate"
 fi
 
 # ─── Component 2: Resonance (30 pts) ───
@@ -89,9 +92,9 @@ img_count=$img_in_assets
 if [[ $img_count -ge 3 ]]; then
   check 10 "has-visuals" "pass"
 elif [[ $img_count -ge 1 ]]; then
-  check 10 "has-visuals" "partial"
+  check 10 "has-visuals" "partial" "Only $img_count image(s) in assets/ — add 3+ (screenshots, diagrams, SVGs)"
 else
-  check 10 "has-visuals" "fail"
+  check 10 "has-visuals" "fail" "Add 3+ images to assets/ (screenshots, diagrams, SVGs)"
 fi
 
 # Has an anchor story — a concrete narrative example that pulls through
@@ -107,16 +110,16 @@ grep -qi "browser-grid\|autoresearch" "$readme" 2>/dev/null && story_signals=$((
 if [[ $story_signals -ge 3 ]]; then
   check 10 "anchor-story" "pass"
 elif [[ $story_signals -ge 2 ]]; then
-  check 10 "anchor-story" "partial"
+  check 10 "anchor-story" "partial" "Anchor story needs all 3: first-person voice, before/after numbers, named project"
 else
-  check 10 "anchor-story" "fail"
+  check 10 "anchor-story" "fail" "Add a first-person narrative with concrete numbers and a named project example"
 fi
 
 # Has a terminal/score output block people can imagine running
 if grep -qi '═\|score.*quality\|✓\|✗' "$readme" 2>/dev/null; then
   check 5 "show-the-score" "pass"
 else
-  check 5 "show-the-score" "fail"
+  check 5 "show-the-score" "fail" "Add a terminal output block showing what score.sh looks like when you run it"
 fi
 
 # Voice — not dry spec language. Has personality.
@@ -131,9 +134,9 @@ grep -c '?' "$readme" 2>/dev/null | awk '{exit ($1 >= 3 ? 0 : 1)}' && voice_sign
 if [[ $voice_signals -ge 3 ]]; then
   check 5 "has-voice" "pass"
 elif [[ $voice_signals -ge 2 ]]; then
-  check 5 "has-voice" "partial"
+  check 5 "has-voice" "partial" "Add more personality — short punchy sentences, questions to the reader, vivid language"
 else
-  check 5 "has-voice" "fail"
+  check 5 "has-voice" "fail" "README needs personality — short sentences, questions, words with energy"
 fi
 
 # ─── Component 3: Examples (25 pts) ───
@@ -144,13 +147,13 @@ example_count=$(find "$REPO_ROOT/examples" -name "*.md" 2>/dev/null | wc -l | tr
 if [[ $example_count -ge 3 ]]; then
   check 10 "example-count" "pass"
 elif [[ $example_count -ge 2 ]]; then
-  check 10 "example-count" "partial"
+  check 10 "example-count" "partial" "Only $example_count examples — add a 3rd covering a different domain"
 elif [[ $example_count -ge 1 ]]; then
   details+=("{\"name\":\"example-count\",\"points\":3,\"max\":10,\"status\":\"minimal\"}")
   score=$((score + 3))
   max=$((max + 10))
 else
-  check 10 "example-count" "fail"
+  check 10 "example-count" "fail" "Add example GOAL.md files in examples/ — need 3+ for full marks"
 fi
 
 # Mode variety across examples
@@ -172,9 +175,9 @@ $checklist_ex && mode_variety=$((mode_variety + 1))
 if [[ $mode_variety -ge 2 ]]; then
   check 10 "example-mode-variety" "pass"
 elif [[ $mode_variety -ge 1 ]]; then
-  check 10 "example-mode-variety" "partial"
+  check 10 "example-mode-variety" "partial" "Examples cover only 1 mode — add converge, continuous, or checklist variety"
 else
-  check 10 "example-mode-variety" "fail"
+  check 10 "example-mode-variety" "fail" "Examples need mode variety — include converge, continuous, and checklist styles"
 fi
 
 # Real projects (30+ lines of substance)
@@ -187,9 +190,9 @@ done
 if [[ $real_count -ge 2 ]]; then
   check 5 "real-projects" "pass"
 elif [[ $real_count -ge 1 ]]; then
-  check 5 "real-projects" "partial"
+  check 5 "real-projects" "partial" "Only $real_count example with 30+ lines — add another substantial example"
 else
-  check 5 "real-projects" "fail"
+  check 5 "real-projects" "fail" "Examples need substance — at least 2 should be 30+ lines with real detail"
 fi
 
 # ─── Component 4: Integrity (20 pts) ───
@@ -205,14 +208,14 @@ done < <(sed -n 's/.*](\([^)]*\)).*/\1/p' "$REPO_ROOT/README.md" 2>/dev/null | g
 if [[ $broken_links -eq 0 ]]; then
   check 5 "no-broken-links" "pass"
 else
-  check 5 "no-broken-links" "fail"
+  check 5 "no-broken-links" "fail" "$broken_links broken internal link(s) in README — fix or remove them"
 fi
 
 # Dogfoods its own pattern
 if [[ -f "$REPO_ROOT/GOAL.md" ]]; then
   check 5 "dogfood-goal-md" "pass"
 else
-  check 5 "dogfood-goal-md" "fail"
+  check 5 "dogfood-goal-md" "fail" "Add a GOAL.md to this repo — dogfood the pattern"
 fi
 
 # Template exists and covers all sections
@@ -225,19 +228,19 @@ if [[ -f "$template" ]]; then
   if [[ $tmpl_sections -eq 5 ]]; then
     check 5 "template-complete" "pass"
   elif [[ $tmpl_sections -ge 3 ]]; then
-    check 5 "template-complete" "partial"
+    check 5 "template-complete" "partial" "Template covers $tmpl_sections/5 sections — add missing ones"
   else
-    check 5 "template-complete" "fail"
+    check 5 "template-complete" "fail" "Template must include all 5 sections: Fitness Function, Improvement Loop, Action Catalog, Operating Mode, Constraints"
   fi
 else
-  check 5 "template-complete" "fail"
+  check 5 "template-complete" "fail" "Add template/GOAL.md with all 5 required sections"
 fi
 
 # Score script itself is documented (this file has a usage comment)
 if head -5 "$0" | grep -qi "usage\|fitness"; then
   check 5 "score-documented" "pass"
 else
-  check 5 "score-documented" "fail"
+  check 5 "score-documented" "fail" "Add a usage or fitness comment in the first 5 lines of score.sh"
 fi
 
 # ─── Component 5: Distribution (30 pts) ───
@@ -298,9 +301,9 @@ fi
 if $has_quality_signoff && [[ $video_signals -ge 4 ]]; then
   check 10 "video-explainer" "pass"
 elif [[ $video_signals -ge 3 ]]; then
-  check 10 "video-explainer" "partial"
+  check 10 "video-explainer" "partial" "Video infra exists but needs QUALITY.md with APPROVED sign-off for full marks"
 else
-  check 10 "video-explainer" "fail"
+  check 10 "video-explainer" "fail" "Add a Remotion video explainer in video/ with 4+ scenes, real audio, and render script"
 fi
 
 # Twitter-optimized social images (~10 pts)
@@ -323,9 +326,9 @@ done
 if [[ $social_count -ge 2 ]] && $has_gen_script; then
   check 10 "social-images" "pass"
 elif [[ $social_count -ge 1 ]] || $has_gen_script; then
-  check 10 "social-images" "partial"
+  check 10 "social-images" "partial" "Need 2+ social images in assets/social/ AND a generation script"
 else
-  check 10 "social-images" "fail"
+  check 10 "social-images" "fail" "Add Twitter-optimized images (1200x675) in assets/social/ with a generation script"
 fi
 
 # Blog-ready assets and metadata (~10 pts)
@@ -342,13 +345,14 @@ fi
 if [[ $blog_signals -ge 3 ]]; then
   check 10 "blog-ready" "pass"
 elif [[ $blog_signals -ge 2 ]]; then
-  check 10 "blog-ready" "partial"
+  check 10 "blog-ready" "partial" "Need all 3: blog post draft, social cards in README, hostable video"
 elif [[ $blog_signals -ge 1 ]]; then
   details+=("{\"name\":\"blog-ready\",\"points\":3,\"max\":10,\"status\":\"minimal\"}")
   score=$((score + 3))
   max=$((max + 10))
+  feedback+=("blog-ready (minimal): Need docs/blog-post.md, social card refs in README, and hostable video")
 else
-  check 10 "blog-ready" "fail"
+  check 10 "blog-ready" "fail" "Add docs/blog-post.md, reference social cards in README, render or link a video"
 fi
 
 # ─── Output ───
@@ -356,11 +360,20 @@ fi
 pct=$(( (score * 100) / max ))
 
 if $JSON_MODE; then
+  # Build feedback JSON array
+  fb_json=""
+  for fb in "${feedback[@]+"${feedback[@]}"}"; do
+    [[ -z "$fb" ]] && continue
+    escaped=$(echo "$fb" | sed 's/"/\\"/g')
+    [[ -n "$fb_json" ]] && fb_json="$fb_json,"
+    fb_json="$fb_json\"$escaped\""
+  done
   echo "{"
   echo "  \"score\": $score,"
   echo "  \"max\": $max,"
   echo "  \"pct\": $pct,"
-  echo "  \"details\": [$(IFS=,; echo "${details[*]}")]"
+  echo "  \"details\": [$(IFS=,; echo "${details[*]}")],"
+  echo "  \"feedback\": [$fb_json]"
   echo "}"
 else
   echo ""
@@ -428,4 +441,15 @@ else
     ;; esac
   done
   echo ""
+  if [[ ${feedback[@]+x} ]]; then
+    echo "  FEEDBACK (top actions to improve score)"
+    count=0
+    for fb in "${feedback[@]+"${feedback[@]}"}"; do
+      [[ -z "$fb" ]] && continue
+      printf "    → %s\n" "$fb"
+      count=$((count + 1))
+      [[ $count -ge 3 ]] && break
+    done
+    echo ""
+  fi
 fi

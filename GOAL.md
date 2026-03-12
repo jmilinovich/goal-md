@@ -45,6 +45,7 @@ None. Clone and run `./scripts/score.sh`.
 
 ```
 repeat:
+  0. Read iterations.jsonl if it exists — note what's been tried and what worked
   1. ./scripts/score.sh --json > /tmp/before.json
   2. Read the score breakdown — find the weakest component
   3. Pick the highest-impact action from the Action Catalog
@@ -52,7 +53,8 @@ repeat:
   5. ./scripts/score.sh --json > /tmp/after.json
   6. Compare: if score improved, commit
   7. If unchanged or decreased, revert
-  8. Continue
+  8. Append to iterations.jsonl: before/after scores, action taken, result, one-sentence note
+  9. Continue
 ```
 
 Commit messages: `[S:NN→NN] component: what changed`
@@ -148,6 +150,7 @@ No subdomain. Two surfaces: GitHub repo (canonical) + blog post (narrative). Les
 | `video/` | Remotion video explainer project | Yes |
 | `video/out/video.mp4` | Rendered explainer video | Generated |
 | `docs/blog-post.md` | Blog post draft for jmilinovich.com | Yes |
+| `iterations.jsonl` | Iteration log (append-only) | Append only |
 
 ## When to Stop
 
