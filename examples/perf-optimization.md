@@ -4,7 +4,7 @@ You have a Node.js API (Fastify) serving product catalog reads for an e-commerce
 
 Run benchmarks. Find the bottleneck. Fix it. Benchmark again. Keep what helps, discard what doesn't. Repeat forever — there is always another millisecond to find.
 
-This is the continuous-mode showcase. The agent never finishes. It either improves or it watches. When it runs out of ideas, it waits, re-benchmarks, and catches the regression that a dependency update or data migration quietly introduced at 3am.
+This is the continuous-mode showcase. The agent never finishes. It either improves or it watches. When it runs out of ideas, it waits, re-benchmarks, and catches the regression that a dependency update or data migration quietly introduced at 3am. Most GOAL.md files converge — they have a finish line. This one doesn't. The agent is a ratchet: it can only tighten.
 
 ## Fitness Function
 
@@ -49,6 +49,8 @@ This agent should be a relentless optimization pressure that runs on a schedule 
 ### Stopping Conditions
 
 **None.** This is the point. Run until a human kills it. After 5 consecutive no-improvement iterations, switch from "optimize" to "monitor" — re-run the benchmark every 30 minutes and alert (write to `perf-alerts.log`) if any metric regresses by more than 10%. If a regression is detected, switch back to "optimize" and fix it. The agent oscillates between hunter and watchdog forever.
+
+The rhythm looks like this in practice: 8 aggressive iterations (score jumps from 62 to 81), then 3 iterations that go nowhere (the easy wins are gone), then watchdog mode for 6 hours, then a `npm update` lands and p95 creeps up 4ms, and the agent wakes up, bisects the regression to `fast-json-stringify` 6.1.0, pins 6.0.x, commits, and goes back to sleep. That's the value of continuous mode — the 10 minutes of actual work the agent does at 2am is worth more than the 6 hours it spent watching.
 
 ## Bootstrap
 
@@ -132,6 +134,8 @@ After running this against a few codebases, a pattern emerges. The action catalo
 
 The agent doesn't know these things up front. It finds them by following the flamegraph, trying a fix, and measuring. That's the whole point of continuous mode — you don't need to predict every optimization, you just need the feedback loop.
 
+The pattern also reveals a frustrating truth about performance work: the action catalog feels comprehensive when you write it, and then the flamegraph shows you that 30% of your CPU is going to something you never thought to measure. The catalog is a starting point, not a map. The flamegraph is the map.
+
 ## Constraints
 
 1. **Do not break the API contract.** Every route must return the same shape. Integration tests in `test/api/` are the contract — they must pass before any commit.
@@ -140,6 +144,7 @@ The agent doesn't know these things up front. It finds them by following the fla
 4. **Benchmark must be reproducible.** Always seed the same dataset (`npm run seed` uses a fixed seed). Always run on the same machine config. Record `uname -a` and `node -v` in each history entry.
 5. **No micro-benchmarks as justification.** The score comes from `bench.sh` only. A change that makes one function 10x faster but doesn't move the score gets discarded.
 6. **Keep the code readable.** No manual loop unrolling, no bit twiddling, no WASM modules. If a human can't review the diff in 2 minutes, it's too clever.
+7. **Log every iteration, even failures.** `benchmarks/history.jsonl` is the lab notebook. A change that made things 2% worse is still information — next time the agent considers a similar approach, it can check the history and skip it. The agent should append to this file on every iteration, not just successful ones.
 
 ## File Map
 
