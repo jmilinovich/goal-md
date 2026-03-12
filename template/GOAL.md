@@ -101,15 +101,23 @@ Commit messages: `[S:NN→NN] component: what you did`
 
 ### [Component 1] (target: [value])
 
+<!-- Replace these example rows with real actions for your project. -->
+
 | Action | Impact | How |
 |--------|--------|-----|
-| [action] | +N pts | [concrete steps] |
+| Add integration test for /api/users | +3 pts | Write test, run, verify coverage increases |
+| Fix N+1 query in orders endpoint | +5 pts | Add `.joinedload()`, benchmark before/after, confirm no API change |
+| Handle edge case for empty cart checkout | +2 pts | Add validation in `checkout.ts`, add test, run suite |
 
 ### [Component 2] (target: [value])
 
+<!-- Replace these example rows with real actions for your project. -->
+
 | Action | Impact | How |
 |--------|--------|-----|
-| [action] | +N pts | [concrete steps] |
+| Tune linter rule for false positives on acronyms | +2 pts | Add vocab file with project-specific terms, re-run linter, verify precision improves |
+| Add missing prop documentation for Modal | +4 pts | Read source types, generate prop table, paste into docs, verify with prop-check script |
+| Precompile validation schemas at build time | +3 pts | Run `ajv --compile` in build step, load compiled validators at startup, benchmark cold start |
 
 ## Constraints
 
