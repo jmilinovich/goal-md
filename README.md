@@ -1,16 +1,16 @@
 # GOAL.md
 
-**A goal-specification file for autonomous coding agents.**
+**Give an AI agent a number to make go up and a loop to do it in. Then go to sleep.**
 
 ![The GOAL.md pattern: fitness function → improvement loop → action catalog → operating mode → constraints](assets/pattern.svg)
 
-Karpathy's [autoresearch](https://github.com/karpathy/autoresearch) showed that an agent + a fitness function + a loop = overnight research. But it only works when the metric is obvious — loss goes down. What about everything else?
+Karpathy's [autoresearch](https://github.com/karpathy/autoresearch) proved the formula: agent + fitness function + loop = overnight breakthroughs. But autoresearch only works when God hands you a scalar metric — loss goes down, paper gets better. Most software isn't like that. You have to *construct* the metric before you can optimize it.
 
-## The story
+GOAL.md is the pattern for doing that. One file, dropped into any repo, that turns a coding agent into an autonomous improver.
 
-I had a Playwright test suite for a routing system. 30 routes, half broken, no way to know which ones actually worked. I wanted an AI agent to fix it — not as a one-shot task, but as an ongoing loop. Run the tests, see what's broken, fix it, run again.
+## How I stumbled into this
 
-The problem: there's no `val_bpb` for "is this test infrastructure trustworthy?" I had to build the ruler before I could measure. So I wrote a scoring script:
+30 Playwright tests for a routing system. Half broken, no way to tell which. I wanted Claude to fix them — not once, but in a loop. The problem: there's no loss function for "is this test infrastructure trustworthy?" I had to build the ruler before I could measure.
 
 ```
 ═══════════════════════════════════════════
@@ -23,21 +23,13 @@ The problem: there's no `val_bpb` for "is this test infrastructure trustworthy?"
     consistency                  ✗ 0.38
 ```
 
-Then I wrote a file that told the agent: here's the score, here's how to make it go up, here's when to stop. I left it running. It went from 47 to 83 over a few hours. 12 commits, each one atomic, each one making the score go up.
+Then I wrote a file that told Claude: here's the score, here's how to make it go up, here's when to stop. I went to bed. Woke up to 12 commits, each atomic, each pushing the score higher. 47 → 83.
 
 That file became GOAL.md.
 
 ## Why not just a good CLAUDE.md?
 
-CLAUDE.md tells an agent *how to work* in your repo. Build commands, conventions, architecture. It's a manual.
-
-GOAL.md tells an agent *what "better" means* and how to get there. It's a reward function with an improvement loop attached. The agent doesn't need you to tell it what to do next — it measures, diagnoses, acts, and verifies on its own.
-
-You need a GOAL.md when:
-- The work is an **optimization loop**, not a one-shot task
-- "Better" requires a **constructed metric**, not just "tests pass"
-- You want the agent to work **across multiple sessions** without re-explaining the goal
-- You want to go to sleep and wake up to progress
+CLAUDE.md is a manual — it tells an agent *how to work* in your repo. GOAL.md is a reward function — it tells an agent *what "better" means* and gives it a loop to get there. The agent measures, diagnoses, acts, and verifies on its own. You don't need to be in the room.
 
 ## The five elements
 
