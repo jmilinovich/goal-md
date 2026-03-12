@@ -40,11 +40,19 @@ total = docs_quality + instrument_quality   # out of 100
 
 ### Why Two Scores?
 
-Because the tools that measure documentation quality are themselves broken, and an agent that can't distinguish between "the docs are bad" and "the linter is wrong" will waste cycles fighting false positives.
+Because the tools that measure documentation quality are themselves broken, and an agent that can't distinguish between "the docs are bad" and "the linter is wrong" will waste cycles fighting false positives — or worse, actively damage good docs to satisfy a broken checker.
 
-Here's the problem concretely: Vale flags `onChange` as a spelling error because it's not in any dictionary. The agent sees a Vale warning, "fixes" the docs by wrapping `onChange` in backticks, and the warning goes away. But the docs weren't wrong — the linter was. Score A didn't improve (the docs were already correct), but the agent burned an iteration. Worse, if the agent decides to silence the warning by disabling the spelling rule, now Vale stops catching actual misspellings, and Score A drops on the next iteration when a real typo slips through.
+Here's the trap, step by step:
 
-The dual-score pattern prevents this. The agent can see that `instrument_quality` is low (the linter has false positives) and fix the linter first (add `onChange` to the vocabulary file). Then when it works on the docs, the linter is actually helpful instead of noisy.
+1. Vale flags `onChange` as a spelling error (it's not in any dictionary).
+2. The agent sees a Vale warning, "fixes" the docs by wrapping `onChange` in backticks.
+3. The warning goes away. The agent thinks it made progress.
+4. But the docs weren't wrong — the linter was. Score A didn't improve. The agent burned an iteration.
+5. Next iteration: the agent sees more spelling warnings. It decides the spelling rule is too noisy and disables it entirely.
+6. Now Vale stops catching actual misspellings. `onChnage` in the `<Slider>` docs goes unnoticed.
+7. Score A drops. The agent has made things worse by "fixing" the measurement.
+
+This is the Goodhart failure mode for documentation agents: when the measure is itself broken, optimizing for the measure degrades the thing you care about. The dual-score pattern breaks the loop. The agent can see that `instrument_quality` is low (the linter has false positives) and fix the linter first (add `onChange` to the vocabulary file — a Score B improvement). Then when it works on the docs, the linter is actually helpful instead of noisy. The agent never has to guess whether a warning is real because it already calibrated the instrument.
 
 **Improving the instrument vs. improving the docs — concrete examples:**
 
@@ -55,7 +63,7 @@ The dual-score pattern prevents this. The agent can see that `instrument_quality
 | Fixing a stale prop table in `Modal.md` | Docs (A) | The `onClose` prop was renamed to `onDismiss` in v4 but the docs still say `onClose`. Accuracy goes up. The instrument didn't change. |
 | Adding an Accessibility section to `Select.md` | Docs (A) | The page was missing a required section. Completeness goes up. The instrument didn't change. |
 
-The instrument score is a meta-score. It asks: "how much can we trust the docs score?" If `instrument_quality` is 12/25, you're flying partially blind — the agent might think docs are fine when they're not, or fix things that aren't broken.
+The instrument score is a meta-score. It asks: "how much can we trust the docs score?" If `instrument_quality` is 12/25, you're flying partially blind — the agent might think docs are fine when they're not, or fix things that aren't broken. Think of it like a scale that's off by 5 pounds: every measurement is wrong, and you can't fix your diet until you fix the scale. Except here, fixing the scale is itself scored work.
 
 ### Metric Mutability
 
@@ -140,8 +148,8 @@ Example: `[D:42 I:18 → D:42 I:21] prop-check: handle optional props with defau
 
 | Action | Impact | How |
 |--------|--------|-----|
-| Handle import elision | +2 pts | TSX blocks in docs omit imports for brevity. `compile-examples.sh` should prepend `import * as React from 'react'; import { [ComponentName] } from '@tapestry/react';` before compiling. Infer component from the doc filename. |
-| Handle multi-block examples | +1 pt | Some doc pages have a "full example" split across multiple fenced blocks. Concatenate consecutive `tsx` blocks before compiling. |
+| Handle import elision | +2 pts | TSX blocks in docs omit imports for brevity. `compile-examples.sh` should prepend `import * as React from 'react'; import { [ComponentName] } from '@tapestry/react';` before compiling. Infer component from the doc filename. Without this, every single example fails `tsc` and the usability score is near zero — not because the examples are bad, but because the extractor doesn't know what `Button` is. |
+| Handle multi-block examples | +1 pt | Some doc pages have a "full example" split across multiple fenced blocks (a "setup" block and a "render" block). Concatenate consecutive `tsx` blocks before compiling. The `Modal.md` page is the worst offender — 4 blocks that only make sense together. |
 
 ### Docs — Accuracy (target: 28/30)
 
@@ -169,8 +177,8 @@ Example: `[D:42 I:18 → D:42 I:21] prop-check: handle optional props with defau
 1. **No API changes to fix docs** — if a prop name is confusing, document it clearly; do not rename the prop. Docs describe the library as it is.
 2. **Accessibility sections must be accurate** — do not fabricate ARIA roles. Run the component in Storybook and inspect the rendered HTML, or read the source in `src/components/[Name]/[Name].tsx`. If unsure, write "TODO: verify" rather than guess.
 3. **Examples must be self-contained** — every TSX block should work if pasted into a file with only `@tapestry/react` as a dependency. No implicit app context, no undeclared variables.
-4. **Instrument changes cannot lower Score A** — if you tune Vale to flag fewer things, and that causes docs_quality to drop (because real issues are now ignored), revert the Vale change. The instrument serves the quality score, not the other way around.
-5. **Do not delete existing doc content to improve scores** — completeness means adding what is missing, not removing what is hard to measure.
+4. **Instrument changes cannot lower Score A** — if you tune Vale to flag fewer things, and that causes docs_quality to drop (because real issues are now ignored), revert the Vale change. The instrument serves the quality score, not the other way around. This is the constraint that makes the dual-score pattern work. Without it, the agent could get to 100/100 by disabling all the checkers.
+5. **Do not delete existing doc content to improve scores** — completeness means adding what is missing, not removing what is hard to measure. An agent that deletes a broken example to make `compile-examples.sh` pass has made the docs worse, not better.
 6. **Preserve voice** — Tapestry docs use second person ("you"), present tense, and short sentences. Do not introduce passive voice or academic tone. Match the style in `docs/components/Button.md` as the reference.
 
 ## File Map
