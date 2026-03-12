@@ -10,7 +10,7 @@ GOAL.md is the pattern for doing that. One file you drop into a repo that turns 
 
 ## How I stumbled into this
 
-30 Playwright tests for a routing system. Half broken, no way to tell which. I wanted Claude to fix them — not once, but in a loop. The problem: there's no loss function for "is this test infrastructure trustworthy?" I had to build the ruler before I could measure.
+I had 30 Playwright tests for a routing system. Half were broken, no way to tell which. I wanted Claude to fix them, not once but in a loop. Problem is there's no loss function for "is this test infrastructure trustworthy?" I had to build the ruler before I could measure.
 
 ```
 ═══════════════════════════════════════════
@@ -23,7 +23,7 @@ GOAL.md is the pattern for doing that. One file you drop into a repo that turns 
     consistency                  ✗ 0.38
 ```
 
-Then I wrote a file that told Claude: here's the score, here's how to make it go up, here's when to stop. I went to bed. Woke up to 12 commits, each atomic, each pushing the score higher. 47 → 83.
+So I wrote a file that told Claude: here's the score, here's how to make it go up, here's when to stop. Went to bed. Woke up to 12 commits, each atomic, each pushing the score higher. 47 → 83.
 
 That file became GOAL.md. The wild part wasn't the pattern itself, it was waking up to a repo that was genuinely better than when I left it.
 
@@ -35,7 +35,7 @@ CLAUDE.md is a manual. It tells an agent *how to work* in your repo. GOAL.md is 
 
 ### 1. Fitness function
 
-> Not a vibe — a number. The agent needs a computable definition of "better."
+> Not a vibe. A number. The agent needs a computable definition of "better."
 
 ```bash
 ./scripts/score.sh    # → 47/100... then 52... then 61... then 83
@@ -79,7 +79,7 @@ This is the same structure as autoresearch (`modify train.py → run → check v
 | Fix a bidirectional link        | +2-3 pts  | Add the missing side             |
 ```
 
-autoresearch leaves this implicit — "everything in `train.py` is fair game." For neural nets, fine. For software, being explicit prevents the agent from burning cycles on 1-point changes when 5-point moves are sitting right there. The point estimates don't need to be precise; they're prioritization signals.
+autoresearch leaves this implicit ("everything in `train.py` is fair game") which is fine for neural nets. For software, being explicit prevents the agent from burning cycles on 1-point changes when 5-point moves are sitting right there. The point estimates don't need to be precise. They're prioritization signals, not promises.
 
 ### 4. Operating mode
 
