@@ -35,27 +35,27 @@ CLAUDE.md is a manual — it tells an agent *how to work* in your repo. GOAL.md 
 
 ### 1. Fitness function
 
-A computable definition of "better." Not a vibe — a number.
+> Not a vibe — a number. The agent needs a computable definition of "better."
 
 ```bash
 ./scripts/score.sh    # → 47/100... then 52... then 61... then 83
 ```
 
-autoresearch has `evaluate_bpb()` in a read-only Python file. Beautiful, but only works when God gives you a scalar metric. Most software doesn't have that. You have to construct one.
+autoresearch locks `evaluate_bpb()` in a read-only file. That works when the metric is God-given. Most software metrics aren't — you have to construct them.
 
-**The key question: can the agent modify its own metric?**
+The interesting question is *who can change the ruler:*
 
 | Mode | What it means |
 |------|---------------|
 | **Locked** | Agent can't touch the scoring code. autoresearch does this. |
-| **Split** | Agent can improve the *measurement instrument* but not the *definition of good*. This is the interesting one. |
-| **Open** | Agent can modify everything, including how success is measured. Early-stage projects. |
+| **Split** | Agent can improve the *measurement instrument* but not the *definition of good*. |
+| **Open** | Agent can modify everything, including how success is measured. |
 
-The **split mode** is where it gets interesting. I had two scores: one for "is the routing actually working?" (the thing) and one for "can we trust what the tests are telling us?" (the instrument). The agent could make the instrument better — add tests, fix detection patterns — without gaming the outcome score. You need a dual-score system when the agent is building its own telescope.
+Split mode is where it gets good. I had two scores: "is the routing working?" (the thing) and "can we trust the tests?" (the instrument). The agent could sharpen the instrument — add tests, fix detection — without gaming the outcome. You need a dual-score system when the agent is building its own telescope.
 
 ### 2. Improvement loop
 
-A closed cycle. Measure → diagnose → act → verify → keep or revert.
+> Measure → diagnose → act → verify → keep or revert. Every iteration leaves the repo better or unchanged, never worse.
 
 ```
 repeat:
@@ -67,11 +67,11 @@ repeat:
   6. Improved? Commit. Regressed? Revert.
 ```
 
-autoresearch: modify `train.py` → run → check `val_bpb` → keep or `git reset`. Same structure, different domain.
+This is the same structure as autoresearch (`modify train.py → run → check val_bpb → keep or git reset`), just generalized beyond training runs.
 
 ### 3. Action catalog
 
-Concrete moves the agent can make, with estimated impact.
+> A menu of concrete moves, ranked by impact. Tells the agent *where to spend its time.*
 
 ```
 | Action                          | Impact    | How                              |
@@ -81,13 +81,11 @@ Concrete moves the agent can make, with estimated impact.
 | Fix a bidirectional link        | +2-3 pts  | Add the missing side             |
 ```
 
-autoresearch leaves this implicit: "everything in `train.py` is fair game." That works for neural nets. For software, being explicit helps — it tells the agent "this is a 5-point move, that's a 1-point move" so it doesn't waste time on low-impact changes.
-
-The point estimates don't need to be precise. They're prioritization signals.
+autoresearch leaves this implicit — "everything in `train.py` is fair game." For neural nets, fine. For software, being explicit prevents the agent from burning cycles on 1-point changes when 5-point moves are sitting right there. The point estimates don't need to be precise; they're prioritization signals.
 
 ### 4. Operating mode
 
-How autonomous is the agent?
+> How long is the leash? Same agent, different levels of autonomy.
 
 | Mode | When to use |
 |------|-------------|
@@ -95,11 +93,9 @@ How autonomous is the agent?
 | **Continuous** | Run forever. autoresearch: "NEVER STOP... the human might be asleep." |
 | **Supervised** | Pause at gates. For high-stakes changes or early iterations while building trust. |
 
-Think of these like Claude Code's permission modes. Same agent, different leash length.
-
 ### 5. Constraints
 
-What the agent must not do. Load-bearing guardrails, not suggestions.
+> Load-bearing guardrails, not suggestions. The lines the agent must never cross.
 
 ```
 - Never fabricate test results — they come from the test runner only
@@ -108,7 +104,7 @@ What the agent must not do. Load-bearing guardrails, not suggestions.
 - Atomic commits — one improvement each, so reverts are clean
 ```
 
-autoresearch: "don't modify `prepare.py`", "don't add dependencies", "simpler is better."
+autoresearch has the same idea: "don't modify `prepare.py`", "don't add dependencies", "simpler is better." Every autonomous system needs a fence.
 
 ## The lineage
 
