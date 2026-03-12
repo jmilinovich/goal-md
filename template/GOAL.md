@@ -2,7 +2,9 @@
 
 ## Fitness Function
 
-<!-- How to compute "better." Must be runnable, not a vibe. -->
+<!-- Replace [command] with a bash command that outputs a number or JSON score.
+     Examples: `pytest --cov | tail -1`, `./scripts/score.sh --json`, `cargo bench 2>&1 | grep throughput`
+     It must be runnable, deterministic, and finish in under a minute. -->
 
 ```bash
 # Run this to get the current score:
@@ -11,11 +13,10 @@
 
 ### Metric Definition
 
-<!--
-Define the formula. If you have a dual-score system:
-- Score 1: the thing being measured
-- Score 2: the quality of the measurement instrument
--->
+<!-- Replace [formula] with how the score is calculated from its parts.
+     Simple example: `score = total_line_coverage_pct`
+     Dual-score example: `total = (accuracy + completeness) / 75 + (linter_precision + recall) / 25`
+     Add one row per component — each should be independently measurable. -->
 
 ```
 score = [formula]
@@ -27,7 +28,7 @@ score = [formula]
 
 ### Metric Mutability
 
-<!-- Pick one: locked, split, or open. See README for definitions. -->
+<!-- Pick one and change `[ ]` to `[x]`. Delete the other two. -->
 
 - [ ] **Locked** — Agent cannot modify scoring code
 - [ ] **Split** — Agent can improve the instrument but not the outcome definition
@@ -35,7 +36,7 @@ score = [formula]
 
 ## Operating Mode
 
-<!-- Pick one: converge, continuous, or supervised. -->
+<!-- Pick one and change `[ ]` to `[x]`. Delete the other two. -->
 
 - [ ] **Converge** — Stop when criteria met
 - [ ] **Continuous** — Run until human interrupts
@@ -43,7 +44,9 @@ score = [formula]
 
 ### Stopping Conditions
 
-<!-- Required for converge mode. Delete this section for continuous mode. -->
+<!-- Required for converge mode. Delete this section if you chose continuous.
+     List concrete, machine-checkable conditions — not vibes.
+     Examples: "score >= 90", "5 consecutive iterations with no improvement", "test suite takes > 60s" -->
 
 Stop and report when ANY of:
 - [condition 1]
@@ -53,7 +56,9 @@ Stop and report when ANY of:
 
 ## Bootstrap
 
-<!-- What must a human do before the agent can run autonomously? -->
+<!-- List the exact shell commands a human must run before the agent can work autonomously.
+     Examples: `npm install`, `cp .env.example .env`, `docker compose up -d`, `pip install -e ".[test]"`
+     End with a command that verifies the fitness function works (e.g., "Run `./scripts/score.sh` — expect ~45"). -->
 
 1. [step]
 2. [step]
@@ -80,7 +85,8 @@ Commit messages: `[S:NN→NN] component: what you did`
 
 ## Action Catalog
 
-<!-- Group by score component. Include estimated impact. -->
+<!-- Create one subsection per score component. Each row should be a concrete, single-session task
+     with an estimated point impact and step-by-step instructions. See examples/ for good catalogs. -->
 
 ### [Component 1] (target: [value])
 
@@ -96,14 +102,17 @@ Commit messages: `[S:NN→NN] component: what you did`
 
 ## Constraints
 
-<!-- Load-bearing guardrails. Not suggestions. -->
+<!-- These are hard rules the agent must never break — not suggestions.
+     Examples: "No new production dependencies", "Do not modify database schema",
+     "Tests must pass before every commit", "No mocking the database in tests" -->
 
 1. **[constraint]** — [why]
 2. **[constraint]** — [why]
 
 ## File Map
 
-<!-- What can the agent touch? -->
+<!-- List every file the agent will read or write. Be explicit about what is editable.
+     Mark scoring scripts and config as "No" so the agent does not game the metric. -->
 
 | File | Role | Editable? |
 |------|------|-----------|
@@ -111,7 +120,8 @@ Commit messages: `[S:NN→NN] component: what you did`
 
 ## When to Stop
 
-<!-- Report format when stopping conditions are met. -->
+<!-- This is the report the agent produces when a stopping condition triggers.
+     Keep this format — it makes it easy to compare runs. -->
 
 ```
 Starting score: NN.N
