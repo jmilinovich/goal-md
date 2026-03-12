@@ -128,9 +128,9 @@ Things the agent will run into and should work around, not try to fix:
 2. **Mock all external services** — Stripe, SendGrid, any webhook targets. Use `respx` for httpx mocking. No test should make a real HTTP call.
 3. **Each test file maps 1:1 to a router file** — `app/routers/orders.py` -> `tests/test_orders.py`. Don't create a separate file per endpoint.
 4. **No `# pragma: no cover`** — Don't game the metric. If code is untestable, note it in the commit message and move on.
-5. **Tests must be independent** — No ordering dependencies. Each test sets up its own fixtures via factories. `pytest-randomly` is in the dev deps for a reason.
-6. **Keep the suite under 30 seconds** — If a new test is slow, it's probably hitting something it shouldn't be. Fix the mock.
-7. **Use `factories.py` for all test data** — Don't hand-build dicts. The factories handle FK relationships and defaults. If a factory doesn't exist for the model you need, add one — don't inline the creation.
+5. **Tests must be independent** — No ordering dependencies. Each test sets up its own fixtures via factories. `pytest-randomly` is in the dev deps for a reason. If you run `pytest --randomly-seed=last` and a test fails that previously passed, you have an ordering dependency. Fix it before moving on.
+6. **Keep the suite under 30 seconds** — If a new test is slow, it's probably hitting something it shouldn't be. Fix the mock. The most common cause: the `respx` mock isn't matching the URL pattern and the request falls through to the real network, where it hangs for 5 seconds before `httpx` times out.
+7. **Use `factories.py` for all test data** — Don't hand-build dicts. The factories handle FK relationships and defaults. If a factory doesn't exist for the model you need, add one — don't inline the creation. The `UserFactory` and `MerchantFactory` already handle auth tokens, so `factories.UserFactory()` gives you a user that can authenticate with the test client immediately.
 
 ## File Map
 
