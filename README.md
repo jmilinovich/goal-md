@@ -12,7 +12,7 @@ GOAL.md is the pattern that emerges when you generalize `program.md` to domains 
 
 autoresearch works because LLM training has a god-given fitness function: `val_bpb`. Lower is better. The agent can't argue with it, can't game it, can't redefine it. The metric lives in `prepare.py`, which is read-only. Beautiful.
 
-But most software work doesn't have this. "Is the routing better?" "Is the test infrastructure more trustworthy?" "Is this npm package closer to publishable?" These are real goals, but there's no `loss.backward()` to call. You have to build the ruler before you can measure.
+But most software work doesn't have this. "Is this npm package closer to publishable?" "Is the test infrastructure more trustworthy?" "Is the documentation complete enough?" These are real goals, but there's no `loss.backward()` to call. You have to build the ruler before you can measure.
 
 This creates a problem autoresearch doesn't have: **the agent needs to improve the measurement instrument and the thing being measured, simultaneously, without confusing the two.**
 
@@ -25,7 +25,7 @@ A GOAL.md file has five elements:
 A computable definition of "better." Not a vibe — a number. Something the agent can run, get a score, and compare to the previous score.
 
 ```
-node scripts/score.js    # → routing_quality: 47.2, instrument_quality: 63.1
+node scripts/score.js    # → quality: 47.2, instrument: 63.1
 ```
 
 autoresearch has this as executable Python (`evaluate_bpb()` in `prepare.py`). In domains with constructed metrics, you define it in a script and reference it from GOAL.md.
@@ -35,7 +35,7 @@ autoresearch has this as executable Python (`evaluate_bpb()` in `prepare.py`). I
 | Mode | Metric mutability | Example |
 |------|-------------------|---------|
 | **Locked** | Agent cannot touch the scoring code | autoresearch: `prepare.py` is read-only |
-| **Split** | Agent can improve the *instrument* but not the *definition of good* | GOAL.md with dual scores: instrument quality is improvable, routing quality formula is fixed |
+| **Split** | Agent can improve the *instrument* but not the *definition of good* | Dual scores: instrument quality is improvable, outcome formula is fixed |
 | **Open** | Agent can modify everything, including how success is measured | Early-stage projects where the metric itself is being designed |
 
 The dual-score pattern (thing-being-measured vs. measurement-instrument) is the innovation that makes the "split" mode safe. You get one score for "is the thing good?" and one for "can we trust what we're seeing?" The agent can improve its own instruments without gaming the outcome metric.
@@ -66,11 +66,11 @@ autoresearch leaves this implicit: "Everything in `train.py` is fair game." This
 In constructed-metric domains, being explicit helps:
 
 ```
-| Action                        | Impact    | How                                    |
-|-------------------------------|-----------|----------------------------------------|
-| Fix and re-run a broken route | +5 pts    | Diagnose failure, fix, re-run          |
-| Add missing entity page       | +3-5 pts  | Create from template in CLAUDE.md      |
-| Fix competes_with asymmetry   | +2-3 pts  | Add the missing side of the pair       |
+| Action                          | Impact    | How                                    |
+|---------------------------------|-----------|----------------------------------------|
+| Fix and re-run a broken test    | +5 pts    | Diagnose failure, fix, re-run          |
+| Add missing config page         | +3-5 pts  | Create from template                   |
+| Fix a bidirectional link        | +2-3 pts  | Add the missing side of the pair       |
 ```
 
 The point estimates aren't precise — they're **prioritization signals**. They tell the agent "this is a 5-point move, that's a 1-point move" so it doesn't thrash between high-impact and low-impact work.
@@ -144,7 +144,6 @@ See [`template/GOAL.md`](template/GOAL.md) for a starter template.
 
 | Project | Domain | Metric | Link |
 |---------|--------|--------|------|
-| canva-ai-routing | Test infrastructure for AI routing | Dual: routing quality + instrument quality | [`examples/canva-ai-routing.md`](examples/canva-ai-routing.md) |
 | browser-grid | npm package development | 10-criterion checklist (binary per criterion) | [`examples/browser-grid.md`](examples/browser-grid.md) |
 
 ## The lineage
