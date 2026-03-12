@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="580" height="640" viewBox="0 0 580 640">
+  <style>
+    .bg { fill: #1e1e2e; rx: 12; }
+    .title-bar { fill: #313244; }
+    .dot-red { fill: #f38ba8; }
+    .dot-yellow { fill: #f9e2af; }
+    .dot-green { fill: #a6e3a1; }
+    .text { fill: #cdd6f4; font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace; font-size: 13px; }
+    .header { fill: #89b4fa; font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace; font-size: 13px; font-weight: bold; }
+  </style>
+  <rect class="bg" width="580" height="640" />
+  <rect class="title-bar" x="0" y="0" width="580" height="36" rx="12" />
+  <rect class="title-bar" x="0" y="24" width="580" height="12" />
+  <circle class="dot-red" cx="20" cy="18" r="6" />
+  <circle class="dot-yellow" cx="40" cy="18" r="6" />
+  <circle class="dot-green" cx="60" cy="18" r="6" />
+  <text class="header" x="290" y="22" text-anchor="middle">./scripts/score.sh</text>
+  <text class="text" x="16" y="62" xml:space="preserve">
+    <tspan x="16" dy="20">═══════════════════════════════════════════</tspan>
+    <tspan x="16" dy="20">  goal-md: 85 / 100 (85%)</tspan>
+    <tspan x="16" dy="20">═══════════════════════════════════════════</tspan>
+    <tspan x="16" dy="20">  CLARITY (is the pattern well-defined?)</tspan>
+    <tspan x="16" dy="20">    five-elements-defined        <tspan fill="#4ade80">✓</tspan> 10/10</tspan>
+    <tspan x="16" dy="20">    prior-art-section            <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
+    <tspan x="16" dy="20">    all-modes-defined            <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
+    <tspan x="16" dy="20">    when-to-use                  <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
+    <tspan x="16" dy="20">  RESONANCE (would someone feel something?)</tspan>
+    <tspan x="16" dy="20">    has-visuals                  <tspan fill="#4ade80">✓</tspan> 10/10</tspan>
+    <tspan x="16" dy="20">    anchor-story                 <tspan fill="#4ade80">✓</tspan> 10/10</tspan>
+    <tspan x="16" dy="20">    show-the-score               <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
+    <tspan x="16" dy="20">    has-voice                    <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
+    <tspan x="16" dy="20">  EXAMPLES (does it show the pattern working?)</tspan>
+    <tspan x="16" dy="20">    example-count                <tspan fill="#facc15">◐</tspan> 3/10</tspan>
+    <tspan x="16" dy="20">    example-mode-variety         <tspan fill="#facc15">◐</tspan> 5/10</tspan>
+    <tspan x="16" dy="20">    real-projects                <tspan fill="#facc15">◐</tspan> 2/5</tspan>
+    <tspan x="16" dy="20">  INTEGRITY (does it practice what it preaches?)</tspan>
+    <tspan x="16" dy="20">    no-broken-links              <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
+    <tspan x="16" dy="20">    dogfood-goal-md              <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
+    <tspan x="16" dy="20">    template-complete            <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
+    <tspan x="16" dy="20">    score-documented             <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
+  </text>
+</svg>

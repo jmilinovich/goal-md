@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="580" height="320" viewBox="0 0 580 320">
+  <style>
+    .bg { fill: #1e1e2e; }
+    .box { fill: none; stroke: #cdd6f4; stroke-width: 2; rx: 8; }
+    .box-active { fill: #313244; stroke: #89b4fa; stroke-width: 2; rx: 8; }
+    .label { fill: #cdd6f4; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; text-anchor: middle; }
+    .label-sm { fill: #6c7086; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; text-anchor: middle; }
+    .arrow { stroke: #6c7086; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
+    .loop-arrow { stroke: #89b4fa; stroke-width: 2; fill: none; marker-end: url(#arrowblue); }
+    .gate-yes { fill: #a6e3a1; font-family: 'SF Mono', monospace; font-size: 11px; }
+    .gate-no { fill: #f87171; font-family: 'SF Mono', monospace; font-size: 11px; }
+    .file { fill: #f9e2af; font-family: 'SF Mono', monospace; font-size: 12px; font-weight: bold; text-anchor: middle; }
+  </style>
+  <defs>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#6c7086" />
+    </marker>
+    <marker id="arrowblue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#89b4fa" />
+    </marker>
+  </defs>
+  <rect class="bg" width="580" height="320" rx="12" />
+
+  <!-- GOAL.md file icon -->
+  <text class="file" x="290" y="30">GOAL.md</text>
+
+  <!-- Five boxes -->
+  <rect class="box-active" x="20" y="50" width="100" height="50" />
+  <text class="label" x="70" y="72">Fitness</text>
+  <text class="label" x="70" y="87">Function</text>
+
+  <rect class="box-active" x="140" y="50" width="100" height="50" />
+  <text class="label" x="190" y="80">Loop</text>
+
+  <rect class="box-active" x="260" y="50" width="100" height="50" />
+  <text class="label" x="310" y="72">Action</text>
+  <text class="label" x="310" y="87">Catalog</text>
+
+  <rect class="box-active" x="380" y="50" width="100" height="50" />
+  <text class="label" x="430" y="80">Mode</text>
+
+  <rect class="box-active" x="500" y="50" width="60" height="50" />
+  <text class="label" x="530" y="72">Guard</text>
+  <text class="label" x="530" y="87">rails</text>
+
+  <!-- The loop visualization -->
+  <!-- Measure -->
+  <rect class="box" x="60" y="140" width="120" height="40" />
+  <text class="label" x="120" y="165">Measure</text>
+  <text class="label-sm" x="120" y="195">score.sh → 47</text>
+
+  <!-- Diagnose -->
+  <path class="arrow" d="M 180 160 L 220 160" />
+  <rect class="box" x="220" y="140" width="120" height="40" />
+  <text class="label" x="280" y="165">Diagnose</text>
+  <text class="label-sm" x="280" y="195">weakest: health</text>
+
+  <!-- Act -->
+  <path class="arrow" d="M 340 160 L 380 160" />
+  <rect class="box" x="380" y="140" width="120" height="40" />
+  <text class="label" x="440" y="165">Act</text>
+  <text class="label-sm" x="440" y="195">fix broken test</text>
+
+  <!-- Gate -->
+  <path class="arrow" d="M 440 180 L 440 230" />
+  <polygon points="440,230 410,260 440,290 470,260" fill="none" stroke="#cdd6f4" stroke-width="2" />
+  <text class="label" x="440" y="265">Better?</text>
+
+  <!-- Yes: commit -->
+  <text class="gate-yes" x="480" y="255">yes →</text>
+  <text class="label-sm" x="530" y="255">commit</text>
+
+  <!-- No: revert -->
+  <text class="gate-no" x="480" y="280">no →</text>
+  <text class="label-sm" x="530" y="280">revert</text>
+
+  <!-- Loop back arrow -->
+  <path class="loop-arrow" d="M 410 260 C 300 310 150 310 90 200 L 90 180" />
+
+  <!-- Score progression at bottom -->
+  <text class="label-sm" x="290" y="312">47 → 52 → 61 → 68 → 74 → 79 → 83</text>
+</svg>

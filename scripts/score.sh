@@ -1,10 +1,10 @@
 #!/bin/bash
 # Fitness function for the goal-md repo.
-# Measures spec quality: is the pattern well-defined, consistent, and demonstrated?
+# Measures: is this pattern clear, credible, alive, and adoptable?
 #
 # Usage: ./scripts/score.sh [--json]
 
-set -euo pipefail
+set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 JSON_MODE=false
 [[ "${1:-}" == "--json" ]] && JSON_MODE=true
@@ -30,120 +30,113 @@ check() {
   fi
 }
 
-file_mentions() {
-  grep -qc "$1" "$2" 2>/dev/null && echo "yes" || echo "no"
-}
-
-# ─── Component 1: Spec Completeness (40 pts) ───
-# Does the README define all five elements clearly?
+# ─── Component 1: Spec Clarity (25 pts) ───
+# Does the README define the pattern clearly?
 
 five_elements=("Fitness function" "Improvement loop" "Action catalog" "Operating mode" "Constraints")
 elements_found=0
 for el in "${five_elements[@]}"; do
-  if grep -qi "$el" "$REPO_ROOT/README.md" 2>/dev/null; then
-    elements_found=$((elements_found + 1))
-  fi
+  grep -qi "$el" "$REPO_ROOT/README.md" 2>/dev/null && elements_found=$((elements_found + 1))
 done
 
 if [[ $elements_found -eq 5 ]]; then
-  check 15 "readme-five-elements" "pass"
+  check 10 "five-elements-defined" "pass"
 elif [[ $elements_found -ge 3 ]]; then
-  check 15 "readme-five-elements" "partial"
+  check 10 "five-elements-defined" "partial"
 else
-  check 15 "readme-five-elements" "fail"
+  check 10 "five-elements-defined" "fail"
 fi
 
-# Does the README have a prior art section?
+# Prior art and lineage
 if grep -q "## Prior art" "$REPO_ROOT/README.md" 2>/dev/null; then
-  check 5 "readme-prior-art" "pass"
+  check 5 "prior-art-section" "pass"
 else
-  check 5 "readme-prior-art" "fail"
+  check 5 "prior-art-section" "fail"
 fi
 
-# Does the README have a "when you need" section?
-if grep -q "## When you need" "$REPO_ROOT/README.md" 2>/dev/null; then
-  check 5 "readme-when-to-use" "pass"
-else
-  check 5 "readme-when-to-use" "fail"
-fi
-
-# Does the README reference autoresearch lineage?
-if grep -q "autoresearch" "$REPO_ROOT/README.md" 2>/dev/null; then
-  check 5 "readme-lineage" "pass"
-else
-  check 5 "readme-lineage" "fail"
-fi
-
-# Does the README define the three metric mutability modes?
+# Mutability + operating modes defined
 modes_found=0
-for mode in "Locked" "Split" "Open"; do
-  if grep -q "$mode" "$REPO_ROOT/README.md" 2>/dev/null; then
-    modes_found=$((modes_found + 1))
-  fi
+for mode in "Locked" "Split" "Open" "Converge" "Continuous" "Supervised"; do
+  grep -q "$mode" "$REPO_ROOT/README.md" 2>/dev/null && modes_found=$((modes_found + 1))
 done
-if [[ $modes_found -eq 3 ]]; then
-  check 5 "readme-mutability-modes" "pass"
+if [[ $modes_found -eq 6 ]]; then
+  check 5 "all-modes-defined" "pass"
+elif [[ $modes_found -ge 4 ]]; then
+  check 5 "all-modes-defined" "partial"
 else
-  check 5 "readme-mutability-modes" "fail"
+  check 5 "all-modes-defined" "fail"
 fi
 
-# Does the README define the three operating modes?
-op_modes_found=0
-for mode in "Converge" "Continuous" "Supervised"; do
-  if grep -q "$mode" "$REPO_ROOT/README.md" 2>/dev/null; then
-    op_modes_found=$((op_modes_found + 1))
-  fi
-done
-if [[ $op_modes_found -eq 3 ]]; then
-  check 5 "readme-operating-modes" "pass"
+# When to use / when not to
+if grep -q "## When you need" "$REPO_ROOT/README.md" 2>/dev/null; then
+  check 5 "when-to-use" "pass"
 else
-  check 5 "readme-operating-modes" "fail"
+  check 5 "when-to-use" "fail"
 fi
 
-# ─── Component 2: Template Quality (25 pts) ───
-# Does the template cover all five elements?
+# ─── Component 2: Resonance (30 pts) ───
+# Does it feel real? Can you picture it working?
 
-template="$REPO_ROOT/template/GOAL.md"
-if [[ -f "$template" ]]; then
-  check 5 "template-exists" "pass"
+readme="$REPO_ROOT/README.md"
 
-  tmpl_sections=0
-  for section in "Fitness Function" "Improvement Loop" "Action Catalog" "Operating Mode" "Constraints"; do
-    if grep -qi "$section" "$template" 2>/dev/null; then
-      tmpl_sections=$((tmpl_sections + 1))
-    fi
-  done
+# Has images or screenshots (people need to SEE it)
+img_in_readme=$(grep -c '!\[' "$readme" 2>/dev/null)
+[[ -z "$img_in_readme" ]] && img_in_readme=0
+img_in_assets=$(find "$REPO_ROOT/assets" -name "*.png" -o -name "*.gif" -o -name "*.jpg" -o -name "*.svg" 2>/dev/null | wc -l | tr -d ' ')
+img_count=$((img_in_readme + img_in_assets))
 
-  if [[ $tmpl_sections -eq 5 ]]; then
-    check 10 "template-five-sections" "pass"
-  elif [[ $tmpl_sections -ge 3 ]]; then
-    check 10 "template-five-sections" "partial"
-  else
-    check 10 "template-five-sections" "fail"
-  fi
-
-  # Does template have a file map?
-  if grep -qi "File Map" "$template" 2>/dev/null; then
-    check 5 "template-file-map" "pass"
-  else
-    check 5 "template-file-map" "fail"
-  fi
-
-  # Does template have a stop report format?
-  if grep -qi "When to Stop\|Stop.*report\|Starting score" "$template" 2>/dev/null; then
-    check 5 "template-stop-report" "pass"
-  else
-    check 5 "template-stop-report" "fail"
-  fi
+if [[ $img_count -ge 3 ]]; then
+  check 10 "has-visuals" "pass"
+elif [[ $img_count -ge 1 ]]; then
+  check 10 "has-visuals" "partial"
 else
-  check 5 "template-exists" "fail"
-  check 10 "template-five-sections" "fail"
-  check 5 "template-file-map" "fail"
-  check 5 "template-stop-report" "fail"
+  check 10 "has-visuals" "fail"
 fi
 
-# ─── Component 3: Example Coverage (25 pts) ───
-# How many real examples exist and do they demonstrate different modes?
+# Has an anchor story — a concrete narrative example that pulls through
+# (detected by: a named project example woven into the prose, not just a link to examples/)
+story_signals=0
+# First-person voice ("I left it running", "I wrote", "we built", etc.)
+grep -qi "I left\|I wrote\|I ran\|I woke\|we built\|we ran\|overnight\|next morning" "$readme" 2>/dev/null && story_signals=$((story_signals + 1))
+# Concrete before/after numbers in prose (not just tables)
+grep -qi "[0-9].*→.*[0-9]\|went from.*to\|started at.*ended" "$readme" 2>/dev/null && story_signals=$((story_signals + 1))
+# Named project used as running example in the prose (not just in examples table)
+grep -qi "browser-grid\|autoresearch" "$readme" 2>/dev/null && story_signals=$((story_signals + 1))
+
+if [[ $story_signals -ge 3 ]]; then
+  check 10 "anchor-story" "pass"
+elif [[ $story_signals -ge 2 ]]; then
+  check 10 "anchor-story" "partial"
+else
+  check 10 "anchor-story" "fail"
+fi
+
+# Has a terminal/score output block people can imagine running
+if grep -qi '═\|score.*quality\|✓\|✗' "$readme" 2>/dev/null; then
+  check 5 "show-the-score" "pass"
+else
+  check 5 "show-the-score" "fail"
+fi
+
+# Voice — not dry spec language. Has personality.
+voice_signals=0
+grep -qi "beautiful\|love\|shit\|damn\|wild\|honestly\|the thing is\|here's the trick\|the magic" "$readme" 2>/dev/null && voice_signals=$((voice_signals + 1))
+# Short punchy sentences (detect sentences under 8 words that aren't headers)
+short_punchy=$(grep -v '^#\|^|\|^$\|^-\|^```' "$readme" 2>/dev/null | awk 'NF>0 && NF<8' | wc -l | tr -d ' ')
+[[ $short_punchy -ge 5 ]] && voice_signals=$((voice_signals + 1))
+# Questions to the reader
+grep -c '?' "$readme" 2>/dev/null | awk '{exit ($1 >= 3 ? 0 : 1)}' && voice_signals=$((voice_signals + 1))
+
+if [[ $voice_signals -ge 3 ]]; then
+  check 5 "has-voice" "pass"
+elif [[ $voice_signals -ge 2 ]]; then
+  check 5 "has-voice" "partial"
+else
+  check 5 "has-voice" "fail"
+fi
+
+# ─── Component 3: Examples (25 pts) ───
+# Real examples that show different facets of the pattern
 
 example_count=$(find "$REPO_ROOT/examples" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
 
@@ -152,7 +145,6 @@ if [[ $example_count -ge 3 ]]; then
 elif [[ $example_count -ge 2 ]]; then
   check 10 "example-count" "partial"
 elif [[ $example_count -ge 1 ]]; then
-  # 1 example = 3 pts (less than partial)
   details+=("{\"name\":\"example-count\",\"points\":3,\"max\":10,\"status\":\"minimal\"}")
   score=$((score + 3))
   max=$((max + 10))
@@ -160,21 +152,21 @@ else
   check 10 "example-count" "fail"
 fi
 
-# Do examples demonstrate different operating modes?
-converge_example=false
-continuous_example=false
-checklist_example=false
+# Mode variety across examples
+converge_ex=false
+continuous_ex=false
+checklist_ex=false
 for ex in "$REPO_ROOT/examples"/*.md; do
   [[ -f "$ex" ]] || continue
-  grep -qi "converge\|stopping condition\|stop.*when\|when to stop" "$ex" 2>/dev/null && converge_example=true
-  grep -qi "continuous\|never stop\|run forever" "$ex" 2>/dev/null && continuous_example=true
-  grep -qi "criterion\|checklist\|definition of done" "$ex" 2>/dev/null && checklist_example=true
+  grep -qi "converge\|stopping condition\|stop.*when\|when to stop" "$ex" 2>/dev/null && converge_ex=true
+  grep -qi "continuous\|never stop\|run forever\|NEVER STOP" "$ex" 2>/dev/null && continuous_ex=true
+  grep -qi "criterion\|checklist\|definition of done" "$ex" 2>/dev/null && checklist_ex=true
 done
 
 mode_variety=0
-$converge_example && mode_variety=$((mode_variety + 1))
-$continuous_example && mode_variety=$((mode_variety + 1))
-$checklist_example && mode_variety=$((mode_variety + 1))
+$converge_ex && mode_variety=$((mode_variety + 1))
+$continuous_ex && mode_variety=$((mode_variety + 1))
+$checklist_ex && mode_variety=$((mode_variety + 1))
 
 if [[ $mode_variety -ge 2 ]]; then
   check 10 "example-mode-variety" "pass"
@@ -184,34 +176,29 @@ else
   check 10 "example-mode-variety" "fail"
 fi
 
-# Do examples come from real projects (not synthetic)?
+# Real projects (30+ lines of substance)
 real_count=0
 for ex in "$REPO_ROOT/examples"/*.md; do
   [[ -f "$ex" ]] || continue
-  # Real examples tend to have specific tool commands, file paths, concrete details
   lines=$(wc -l < "$ex" | tr -d ' ')
-  if [[ $lines -gt 30 ]]; then
-    real_count=$((real_count + 1))
-  fi
+  [[ $lines -gt 30 ]] && real_count=$((real_count + 1))
 done
 if [[ $real_count -ge 2 ]]; then
-  check 5 "example-real-projects" "pass"
+  check 5 "real-projects" "pass"
 elif [[ $real_count -ge 1 ]]; then
-  check 5 "example-real-projects" "partial"
+  check 5 "real-projects" "partial"
 else
-  check 5 "example-real-projects" "fail"
+  check 5 "real-projects" "fail"
 fi
 
-# ─── Component 4: Self-Consistency (10 pts) ───
-# Does everything hang together?
+# ─── Component 4: Integrity (20 pts) ───
+# Does it all hang together? Does it practice what it preaches?
 
-# No broken internal links in README
+# No broken internal links
 broken_links=0
 while IFS= read -r link; do
   target="$REPO_ROOT/$link"
-  if [[ ! -f "$target" ]]; then
-    broken_links=$((broken_links + 1))
-  fi
+  [[ ! -f "$target" ]] && broken_links=$((broken_links + 1))
 done < <(sed -n 's/.*](\([^)]*\)).*/\1/p' "$REPO_ROOT/README.md" 2>/dev/null | grep -v '^http' || true)
 
 if [[ $broken_links -eq 0 ]]; then
@@ -220,11 +207,36 @@ else
   check 5 "no-broken-links" "fail"
 fi
 
-# Does this repo have its own GOAL.md? (dogfooding)
+# Dogfoods its own pattern
 if [[ -f "$REPO_ROOT/GOAL.md" ]]; then
   check 5 "dogfood-goal-md" "pass"
 else
   check 5 "dogfood-goal-md" "fail"
+fi
+
+# Template exists and covers all sections
+template="$REPO_ROOT/template/GOAL.md"
+if [[ -f "$template" ]]; then
+  tmpl_sections=0
+  for section in "Fitness Function" "Improvement Loop" "Action Catalog" "Operating Mode" "Constraints"; do
+    grep -qi "$section" "$template" 2>/dev/null && tmpl_sections=$((tmpl_sections + 1))
+  done
+  if [[ $tmpl_sections -eq 5 ]]; then
+    check 5 "template-complete" "pass"
+  elif [[ $tmpl_sections -ge 3 ]]; then
+    check 5 "template-complete" "partial"
+  else
+    check 5 "template-complete" "fail"
+  fi
+else
+  check 5 "template-complete" "fail"
+fi
+
+# Score script itself is documented (this file has a usage comment)
+if head -5 "$0" | grep -qi "usage\|fitness"; then
+  check 5 "score-documented" "pass"
+else
+  check 5 "score-documented" "fail"
 fi
 
 # ─── Output ───
@@ -240,24 +252,56 @@ if $JSON_MODE; then
   echo "}"
 else
   echo ""
-  echo "═══════════════════════════════════"
-  echo "  goal-md spec quality: $score / $max ($pct%)"
-  echo "═══════════════════════════════════"
+  echo "═══════════════════════════════════════════"
+  echo "  goal-md: $score / $max ($pct%)"
+  echo "═══════════════════════════════════════════"
   echo ""
-  printf "  %-30s %s\n" "CHECK" "RESULT"
-  printf "  %-30s %s\n" "─────" "──────"
+  echo "  CLARITY (is the pattern well-defined?)"
   for d in "${details[@]}"; do
     name=$(echo "$d" | sed 's/.*"name":"\([^"]*\)".*/\1/')
-    pts=$(echo "$d" | sed 's/.*"points":\([0-9]*\).*/\1/')
-    mx=$(echo "$d" | sed 's/.*"max":\([0-9]*\).*/\1/')
-    status=$(echo "$d" | sed 's/.*"status":"\([^"]*\)".*/\1/')
-    case $status in
-      pass)    icon="✓" ;;
-      partial) icon="◐" ;;
-      fail)    icon="✗" ;;
-      *)       icon="◐" ;;
-    esac
-    printf "  %-30s %s %s/%s\n" "$name" "$icon" "$pts" "$mx"
+    case "$name" in five-elements*|prior-art*|all-modes*|when-to-use*)
+      pts=$(echo "$d" | sed 's/.*"points":\([0-9]*\).*/\1/')
+      mx=$(echo "$d" | sed 's/.*"max":\([0-9]*\).*/\1/')
+      status=$(echo "$d" | sed 's/.*"status":"\([^"]*\)".*/\1/')
+      case $status in pass) icon="✓";; partial) icon="◐";; *) icon="✗";; esac
+      printf "    %-28s %s %s/%s\n" "$name" "$icon" "$pts" "$mx"
+    ;; esac
+  done
+  echo ""
+  echo "  RESONANCE (would someone feel something?)"
+  for d in "${details[@]}"; do
+    name=$(echo "$d" | sed 's/.*"name":"\([^"]*\)".*/\1/')
+    case "$name" in has-visuals|anchor-story|show-the-score|has-voice)
+      pts=$(echo "$d" | sed 's/.*"points":\([0-9]*\).*/\1/')
+      mx=$(echo "$d" | sed 's/.*"max":\([0-9]*\).*/\1/')
+      status=$(echo "$d" | sed 's/.*"status":"\([^"]*\)".*/\1/')
+      case $status in pass) icon="✓";; partial) icon="◐";; *) icon="✗";; esac
+      printf "    %-28s %s %s/%s\n" "$name" "$icon" "$pts" "$mx"
+    ;; esac
+  done
+  echo ""
+  echo "  EXAMPLES (does it show the pattern working?)"
+  for d in "${details[@]}"; do
+    name=$(echo "$d" | sed 's/.*"name":"\([^"]*\)".*/\1/')
+    case "$name" in example-*|real-*)
+      pts=$(echo "$d" | sed 's/.*"points":\([0-9]*\).*/\1/')
+      mx=$(echo "$d" | sed 's/.*"max":\([0-9]*\).*/\1/')
+      status=$(echo "$d" | sed 's/.*"status":"\([^"]*\)".*/\1/')
+      case $status in pass) icon="✓";; partial|minimal) icon="◐";; *) icon="✗";; esac
+      printf "    %-28s %s %s/%s\n" "$name" "$icon" "$pts" "$mx"
+    ;; esac
+  done
+  echo ""
+  echo "  INTEGRITY (does it practice what it preaches?)"
+  for d in "${details[@]}"; do
+    name=$(echo "$d" | sed 's/.*"name":"\([^"]*\)".*/\1/')
+    case "$name" in no-broken*|dogfood*|template-*|score-*)
+      pts=$(echo "$d" | sed 's/.*"points":\([0-9]*\).*/\1/')
+      mx=$(echo "$d" | sed 's/.*"max":\([0-9]*\).*/\1/')
+      status=$(echo "$d" | sed 's/.*"status":"\([^"]*\)".*/\1/')
+      case $status in pass) icon="✓";; partial) icon="◐";; *) icon="✗";; esac
+      printf "    %-28s %s %s/%s\n" "$name" "$icon" "$pts" "$mx"
+    ;; esac
   done
   echo ""
 fi

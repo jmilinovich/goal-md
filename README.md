@@ -2,170 +2,183 @@
 
 **A goal-specification file for autonomous coding agents.**
 
+![The GOAL.md pattern: fitness function → improvement loop → action catalog → operating mode → constraints](assets/pattern.svg)
+
 Karpathy's [autoresearch](https://github.com/karpathy/autoresearch) showed that an agent + a fitness function + a loop = overnight research. But it only works when the metric is obvious — loss goes down. What about everything else?
 
-Most software domains don't have a natural scalar metric. You have to *construct* one. And that construction is itself part of the work.
+## The story
 
-GOAL.md is the pattern that emerges when you generalize `program.md` to domains with constructed metrics.
+I had a Playwright test suite for a routing system. 30 routes, half broken, no way to know which ones actually worked. I wanted an AI agent to fix it — not as a one-shot task, but as an ongoing loop. Run the tests, see what's broken, fix it, run again.
 
-## The problem
+The problem: there's no `val_bpb` for "is this test infrastructure trustworthy?" I had to build the ruler before I could measure. So I wrote a scoring script:
 
-autoresearch works because LLM training has a god-given fitness function: `val_bpb`. Lower is better. The agent can't argue with it, can't game it, can't redefine it. The metric lives in `prepare.py`, which is read-only. Beautiful.
+```
+═══════════════════════════════════════════
+  routing confidence: 47 / 100 (47%)
+═══════════════════════════════════════════
 
-But most software work doesn't have this. "Is this npm package closer to publishable?" "Is the test infrastructure more trustworthy?" "Is the documentation complete enough?" These are real goals, but there's no `loss.backward()` to call. You have to build the ruler before you can measure.
+    health                       ✗ 0.42
+    accuracy                     ◐ 0.61
+    coverage                     ◐ 0.67
+    consistency                  ✗ 0.38
+```
 
-This creates a problem autoresearch doesn't have: **the agent needs to improve the measurement instrument and the thing being measured, simultaneously, without confusing the two.**
+Then I wrote a file that told the agent: here's the score, here's how to make it go up, here's when to stop. I left it running. It went from 47 to 83 over a few hours. 12 commits, each one atomic, each one making the score go up.
 
-## The pattern
+That file became GOAL.md.
 
-A GOAL.md file has five elements:
+## Why not just a good CLAUDE.md?
+
+CLAUDE.md tells an agent *how to work* in your repo. Build commands, conventions, architecture. It's a manual.
+
+GOAL.md tells an agent *what "better" means* and how to get there. It's a reward function with an improvement loop attached. The agent doesn't need you to tell it what to do next — it measures, diagnoses, acts, and verifies on its own.
+
+You need a GOAL.md when:
+- The work is an **optimization loop**, not a one-shot task
+- "Better" requires a **constructed metric**, not just "tests pass"
+- You want the agent to work **across multiple sessions** without re-explaining the goal
+- You want to go to sleep and wake up to progress
+
+## The five elements
 
 ### 1. Fitness function
 
-A computable definition of "better." Not a vibe — a number. Something the agent can run, get a score, and compare to the previous score.
+A computable definition of "better." Not a vibe — a number.
 
+```bash
+./scripts/score.sh    # → 47/100... then 52... then 61... then 83
 ```
-node scripts/score.js    # → quality: 47.2, instrument: 63.1
-```
 
-autoresearch has this as executable Python (`evaluate_bpb()` in `prepare.py`). In domains with constructed metrics, you define it in a script and reference it from GOAL.md.
+autoresearch has `evaluate_bpb()` in a read-only Python file. Beautiful, but only works when God gives you a scalar metric. Most software doesn't have that. You have to construct one.
 
-**The key question is whether the agent can modify the fitness function.** This is a spectrum:
+**The key question: can the agent modify its own metric?**
 
-| Mode | Metric mutability | Example |
-|------|-------------------|---------|
-| **Locked** | Agent cannot touch the scoring code | autoresearch: `prepare.py` is read-only |
-| **Split** | Agent can improve the *instrument* but not the *definition of good* | Dual scores: instrument quality is improvable, outcome formula is fixed |
-| **Open** | Agent can modify everything, including how success is measured | Early-stage projects where the metric itself is being designed |
+| Mode | What it means |
+|------|---------------|
+| **Locked** | Agent can't touch the scoring code. autoresearch does this. |
+| **Split** | Agent can improve the *measurement instrument* but not the *definition of good*. This is the interesting one. |
+| **Open** | Agent can modify everything, including how success is measured. Early-stage projects. |
 
-The dual-score pattern (thing-being-measured vs. measurement-instrument) is the innovation that makes the "split" mode safe. You get one score for "is the thing good?" and one for "can we trust what we're seeing?" The agent can improve its own instruments without gaming the outcome metric.
+The **split mode** is where it gets interesting. I had two scores: one for "is the routing actually working?" (the thing) and one for "can we trust what the tests are telling us?" (the instrument). The agent could make the instrument better — add tests, fix detection patterns — without gaming the outcome score. You need a dual-score system when the agent is building its own telescope.
 
 ### 2. Improvement loop
 
-A closed cycle the agent follows without human intervention. The canonical form:
+A closed cycle. Measure → diagnose → act → verify → keep or revert.
 
 ```
 repeat:
-  1. Measure (run the fitness function)
-  2. Diagnose (find the weakest component)
-  3. Act (pick the highest-impact action)
-  4. Verify (re-measure)
-  5. Gate (improved? keep. regressed? revert.)
+  1. Run the fitness function
+  2. Find the weakest component
+  3. Pick the highest-impact action
+  4. Make the change
+  5. Re-measure
+  6. Improved? Commit. Regressed? Revert.
 ```
 
-autoresearch: modify `train.py` → commit → `uv run train.py` → check `val_bpb` → keep or `git reset`.
-
-Your version can be more structured because software domains have richer state than a single scalar. The diagnose step can inspect component breakdowns, read error logs, look at screenshots.
+autoresearch: modify `train.py` → run → check `val_bpb` → keep or `git reset`. Same structure, different domain.
 
 ### 3. Action catalog
 
-The set of concrete moves the agent can make, ideally with estimated impact.
-
-autoresearch leaves this implicit: "Everything in `train.py` is fair game." This works because the action space (modify neural network code) is well-understood by the agent.
-
-In constructed-metric domains, being explicit helps:
+Concrete moves the agent can make, with estimated impact.
 
 ```
-| Action                          | Impact    | How                                    |
-|---------------------------------|-----------|----------------------------------------|
-| Fix and re-run a broken test    | +5 pts    | Diagnose failure, fix, re-run          |
-| Add missing config page         | +3-5 pts  | Create from template                   |
-| Fix a bidirectional link        | +2-3 pts  | Add the missing side of the pair       |
+| Action                          | Impact    | How                              |
+|---------------------------------|-----------|----------------------------------|
+| Fix and re-run a broken test    | +5 pts    | Diagnose failure, fix, re-run    |
+| Add missing config page         | +3-5 pts  | Create from template             |
+| Fix a bidirectional link        | +2-3 pts  | Add the missing side             |
 ```
 
-The point estimates aren't precise — they're **prioritization signals**. They tell the agent "this is a 5-point move, that's a 1-point move" so it doesn't thrash between high-impact and low-impact work.
+autoresearch leaves this implicit: "everything in `train.py` is fair game." That works for neural nets. For software, being explicit helps — it tells the agent "this is a 5-point move, that's a 1-point move" so it doesn't waste time on low-impact changes.
+
+The point estimates don't need to be precise. They're prioritization signals.
 
 ### 4. Operating mode
 
-How autonomous is the agent? This is analogous to Claude Code's permission modes.
+How autonomous is the agent?
 
-| Mode | Behavior | When to use |
-|------|----------|-------------|
-| **Converge** | Run until stopping conditions are met, then report | Bounded improvement tasks with clear "done" criteria |
-| **Continuous** | Run forever until human interrupts | Monitoring, ongoing optimization (autoresearch style) |
-| **Supervised** | Pause at gates for human approval | High-stakes changes, early iterations while building trust |
+| Mode | When to use |
+|------|-------------|
+| **Converge** | Stop when criteria met. "Get every score above 80, then report." |
+| **Continuous** | Run forever. autoresearch: "NEVER STOP... the human might be asleep." |
+| **Supervised** | Pause at gates. For high-stakes changes or early iterations while building trust. |
 
-autoresearch is pure continuous: "NEVER STOP... the human might be asleep."
-
-Most software GOAL.md files will use converge mode with explicit stopping conditions:
-- All components above threshold (e.g., every score ≥ 80)
-- N consecutive iterations with no improvement (diminishing returns)
-- Max iterations (time-box)
-- External dependency hit (auth expired, rate limited, blocked)
+Think of these like Claude Code's permission modes. Same agent, different leash length.
 
 ### 5. Constraints
 
-What the agent must not do. These are load-bearing guardrails, not suggestions.
+What the agent must not do. Load-bearing guardrails, not suggestions.
 
 ```
-- Never hand-edit captures/ — test results are produced by the test runner only
-- Never modify auth.json or credentials
-- Always run score.js before and after — composite must not decrease
-- Atomic commits — one improvement per commit, so reverts are clean
+- Never fabricate test results — they come from the test runner only
+- Never modify credentials
+- Always measure before and after — score must not decrease
+- Atomic commits — one improvement each, so reverts are clean
 ```
 
 autoresearch: "don't modify `prepare.py`", "don't add dependencies", "simpler is better."
-
-## Prior art
-
-GOAL.md sits at an intersection of several existing concepts:
-
-| Concept | What it contributes | What it lacks |
-|---------|-------------------|---------------|
-| **autoresearch** (Karpathy, 2026) | Immutable fitness function, keep/discard gate, "never stop" loop | Domain-specific, no action catalog, single scalar only |
-| **Eval-Driven Development** ([evaldriven.org](https://evaldriven.org/)) | Correctness specs with measurable thresholds | No agent-facing file format, no improvement loop |
-| **AGENTS.md** (Google, OpenAI, 20k+ repos) | Conventions and build commands for AI agents | Purely descriptive — no goals, no scores, no loop |
-| **Ralph Wiggum** (Huntley, Claude Code plugin) | Persistent bash loop, circuit breaker, session restarts | No numeric fitness function, no action catalog |
-| **GOAP** (game AI, 2003) | Action inventory with preconditions and effects | Not LLM-oriented, no file-based spec |
-| **SAGA** (arxiv, 2025) | Bi-level architecture: agents define AND optimize scoring functions | Academic, not practical |
-
-The **autoresearch-anything** fork (by zkarimi22) is the closest existing attempt to generalize this — it asks "what metric?" and "how do I extract the score?" and generates an agent spec. GOAL.md is the formalization of what that fork was reaching for.
-
-## When you need a GOAL.md
-
-You probably need one when:
-
-- An AI agent will work on your project **across multiple sessions** (the goal persists beyond any single conversation)
-- "Better" requires a **constructed metric**, not just "tests pass"
-- The work is an **optimization loop**, not a one-shot task
-- You want the agent to be **autonomous** — measure, decide, act, verify without asking you
-
-You probably don't need one when:
-
-- The task is a single well-defined change ("add a dark mode toggle")
-- "Done" is obvious (tests pass, types check, PR approved)
-- A CLAUDE.md with good instructions is sufficient
-
-## Template
-
-See [`template/GOAL.md`](template/GOAL.md) for a starter template.
-
-## Real examples
-
-| Project | Domain | Metric | Link |
-|---------|--------|--------|------|
-| browser-grid | npm package development | 10-criterion checklist (binary per criterion) | [`examples/browser-grid.md`](examples/browser-grid.md) |
 
 ## The lineage
 
 ```
 autoresearch (Karpathy, Mar 2026)
   program.md + prepare.py + train.py
-  Single scalar metric (val_bpb), immutable eval, infinite loop
+  Single scalar metric, immutable eval, infinite loop
   Domain: LLM training
       │
       ├── autoresearch-anything (zkarimi22)
-      │     Generalized to any codebase: "what metric? how to extract?"
+      │     "what metric? how to extract?" — first attempt at generalizing
       │
-      └── GOAL.md (this pattern)
-            Generalized to constructed metrics
-            Added: dual scores, action catalog, operating modes, stopping conditions
+      └── GOAL.md (this)
+            Constructed metrics, dual scores, action catalog, operating modes
             Domain: any software project with an optimization goal
 ```
 
-## Contributing
+## Prior art
 
-This is a new pattern. If you're using something like this, open an issue or PR with your example. The more real-world GOAL.md files we collect, the better we understand what the pattern needs.
+| Concept | What it contributes | What it lacks |
+|---------|-------------------|---------------|
+| **autoresearch** (Karpathy, 2026) | Immutable fitness function, keep/discard gate, "never stop" loop | Domain-specific, no action catalog, single scalar only |
+| **Eval-Driven Development** ([evaldriven.org](https://evaldriven.org/)) | Correctness specs with measurable thresholds | No agent-facing file format, no improvement loop |
+| **AGENTS.md** (Google, OpenAI, 20k+ repos) | Conventions and build commands for AI agents | Purely descriptive — no goals, no scores, no loop |
+| **Ralph Wiggum** (Huntley, Claude Code plugin) | Persistent bash loop, circuit breaker | No numeric fitness function, no action catalog |
+| **GOAP** (game AI, 2003) | Action inventory with preconditions and effects | Not LLM-oriented |
+
+## This repo dogfoods itself
+
+This repo has its own [`GOAL.md`](GOAL.md) and scoring script:
+
+![Current score output from ./scripts/score.sh](assets/score.svg)
+
+A future Claude session can pick up the GOAL.md in this repo and work autonomously to improve the score. Turtles all the way down.
+
+## When you need a GOAL.md
+
+You probably need one when:
+- The work is an **optimization loop**, not a one-shot task
+- "Better" requires a **constructed metric**, not just "tests pass"
+- You want the agent to be **autonomous** across multiple sessions
+- You want to go to sleep and wake up to progress
+
+You probably don't need one when:
+- It's a single well-defined change ("add a dark mode toggle")
+- "Done" is obvious (tests pass, types check, PR approved)
+- A CLAUDE.md with good instructions is enough
+
+## Get started
+
+1. Copy [`template/GOAL.md`](template/GOAL.md) into your repo
+2. Define your fitness function (a script that outputs a number)
+3. Fill in the improvement loop and action catalog
+4. Point an agent at it and let it run
+
+## Real examples
+
+| Project | Domain | Metric | Mode | Link |
+|---------|--------|--------|------|------|
+| browser-grid | Playwright plugin | 10-criterion checklist | Converge | [`examples/browser-grid.md`](examples/browser-grid.md) |
+
+More examples welcome — open a PR.
 
 ## License
 
