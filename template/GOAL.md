@@ -1,4 +1,11 @@
 <!--
+Agent: you are creating a GOAL.md for a user's project.
+Read this template AND 2-3 examples in ../examples/ before writing.
+The fitness function MUST be a runnable shell command, not a description.
+Write the scoring script yourself if one doesn't already exist.
+Every section below is required. Delete all guidance comments when done.
+-->
+<!--
 Quick start:
   1. Copy this file into your repo as GOAL.md
   2. Fill in the [bracketed] sections below
