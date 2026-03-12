@@ -34,7 +34,7 @@ perf_score = (latency_score + throughput_score + cold_start_score + profile_scor
 
 ### Metric Mutability
 
-- [ ] **Frozen** — Thresholds are set. The game is to hit them, not to move the goalposts.
+- [x] **Locked** — Thresholds are set. The game is to hit them, not to move the goalposts.
 
 ## Operating Mode
 
@@ -148,17 +148,17 @@ The pattern also reveals a frustrating truth about performance work: the action 
 
 ## File Map
 
-| File | Role |
-|------|------|
-| `src/routes/products.ts` | Product CRUD routes — highest traffic |
-| `src/routes/search.ts` | Search + facets — most expensive query |
-| `src/services/search.ts` | Search query builder — CPU hotspot |
-| `src/db/pool.ts` | Postgres connection pool config |
-| `src/middleware/image.ts` | Image resize — event loop blocker |
-| `scripts/bench.sh` | Fitness function — runs wrk + hyperfine + k6 |
-| `scripts/bench-diff.sh` | Compares two benchmark JSON files |
-| `scripts/profile.sh` | Runs clinic flame + clinic doctor |
-| `benchmarks/baseline.json` | Starting numbers — never overwrite |
-| `benchmarks/history.jsonl` | Append-only log of every iteration |
-| `k6/scenarios/browse-to-cart.js` | k6 scenario: realistic user flow |
-| `test/api/` | Integration tests — the API contract |
+| File | Role | Editable? |
+|------|------|-----------|
+| `src/routes/products.ts` | Product CRUD routes — highest traffic | Yes |
+| `src/routes/search.ts` | Search + facets — most expensive query | Yes |
+| `src/services/search.ts` | Search query builder — CPU hotspot | Yes |
+| `src/db/pool.ts` | Postgres connection pool config | Yes |
+| `src/middleware/image.ts` | Image resize — event loop blocker | Yes |
+| `scripts/bench.sh` | Fitness function — runs wrk + hyperfine + k6 | No |
+| `scripts/bench-diff.sh` | Compares two benchmark JSON files | No |
+| `scripts/profile.sh` | Runs clinic flame + clinic doctor | No |
+| `benchmarks/baseline.json` | Starting numbers — never overwrite | No |
+| `benchmarks/history.jsonl` | Append-only log of every iteration | Yes — append only |
+| `k6/scenarios/browse-to-cart.js` | k6 scenario: realistic user flow | No |
+| `test/api/` | Integration tests — the API contract | No |
