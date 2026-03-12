@@ -80,6 +80,7 @@ Stop and report when ANY of:
 
 1. [step]
 2. [step]
+3. Record the baseline: Starting score: [N]
 
 ## Improvement Loop
 
@@ -87,24 +88,33 @@ Stop and report when ANY of:
 repeat:
   1. [measure command] > /tmp/before.json
   2. Read scores and component breakdowns
-  3. Decide what to work on:
-     - If [instrument metric] < [threshold]: fix instrument first
-     - If [instrument metric] >= [threshold]: work on [outcome metric]
-  4. Pick highest-impact action from Action Catalog
-  5. Make the change
-  6. If verifiable: run targeted test
-  7. [measure command] > /tmp/after.json
-  8. Compare: if improved without regression, commit
-  9. If regressed or unchanged, revert
-  10. Continue
+  3. Pick highest-impact action from Action Catalog
+  4. Make the change
+  5. If verifiable: run targeted test
+  6. [measure command] > /tmp/after.json
+  7. Compare: if improved without regression, commit
+  8. If regressed or unchanged, revert
+  9. Continue
 ```
+
+#### If using dual scores:
+
+<!-- Delete this subsection if you have a single metric. Keep it if your GOAL.md
+     separates an "instrument" score (measurement quality) from an "outcome" score
+     (the thing you're actually improving). -->
+
+Insert a decision step between steps 2 and 3 above:
+
+> If [instrument metric] < [threshold]: fix the instrument first.
+> If [instrument metric] >= [threshold]: work on [outcome metric].
 
 Commit messages: `[S:NN→NN] component: what you did`
 
 ## Action Catalog
 
 <!-- Create one subsection per score component. Each row should be a concrete, single-session task
-     with an estimated point impact and step-by-step instructions. See examples/ for good catalogs. -->
+     with an estimated point impact and step-by-step instructions. See examples/ for good catalogs.
+     Include removal actions where appropriate — the best version of something is often what remains after cutting. -->
 
 ### [Component 1] (target: [value])
 

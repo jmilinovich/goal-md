@@ -1,6 +1,14 @@
 # GOAL.md
 
-**Give an AI agent a number to make go up and a loop to do it in. Then go to sleep.**
+![GOAL.md](assets/social/hero-card.png)
+
+### give it a number. go to sleep.
+
+Give an AI agent a number to make go up and a loop to do it in. Then go to sleep.
+
+[![Watch the explainer](assets/social/score-card.png)](video/out/video.mp4)
+
+> [Watch the 2-minute explainer video](video/out/video.mp4)
 
 ![The GOAL.md pattern: fitness function → improvement loop → action catalog → operating mode → constraints](assets/pattern.svg)
 
@@ -124,17 +132,7 @@ autoresearch (Karpathy, Mar 2026)
             Domain: any software project with an optimization goal
 ```
 
-## Prior art
-
-**autoresearch** (Karpathy, 2026) is the direct ancestor and the reason this exists. Immutable fitness function + keep/discard gate + "never stop" loop. GOAL.md generalizes the fitness function (constructed metrics, dual scores) and makes explicit the parts autoresearch doesn't need to spell out because it's only doing one thing (action catalog, operating modes).
-
-**Eval-Driven Development** ([evaldriven.org](https://evaldriven.org/)) — correctness specs with measurable thresholds. Good ideas but it's a methodology for humans, not a file format for agents. No loop, no autonomy.
-
-**AGENTS.md** (Google, OpenAI, adopted by 20k+ repos) proved agents need repo-level context files. But AGENTS.md is descriptive: build commands, conventions, "here's how we do things." It tells an agent *how your repo works*, not *what to optimize*. You want both.
-
-**Ralph Wiggum** (Huntley, Claude Code plugin) nailed the "persistent bash loop with a circuit breaker" part. Keep the agent running, stop it when things go sideways. What it doesn't have is a numeric fitness function that tells the loop whether it's making progress or just making changes.
-
-**GOAP** (game AI, 2003) invented the action catalog with preconditions and effects two decades ago. LLM agents don't need formal precondition graphs though. A prioritized menu and enough judgment to pick from it is plenty.
+See also: **Eval-Driven Development** ([evaldriven.org](https://evaldriven.org/)) — measurable correctness specs, but a methodology for humans, not a file format for agents. **AGENTS.md** (Google, OpenAI) — proved agents need repo-level context files, but descriptive ("how we work") not directive ("what to optimize"). **Ralph Wiggum** (Huntley) — persistent bash loop with a circuit breaker, but no numeric fitness function. **GOAP** (game AI, 2003) — action catalogs with preconditions and effects; LLM agents need less formalism but the idea is the same.
 
 ## This repo dogfoods itself
 
@@ -159,8 +157,6 @@ Look at github.com/jmilinovich/goal-md — read the template and examples.
 Then write me a GOAL.md for this repo and start working on it.
 ```
 
-The agent reads the template as a prompt and the examples as few-shot demonstrations. It pattern-matches your codebase against them, writes the fitness function, and starts the loop. You don't need to understand the pattern yourself — you just need to point an agent here and let it learn from the examples the same way you'd give a junior engineer a style guide and three PRs to reference.
-
 Or do it manually:
 
 1. Copy [`template/GOAL.md`](template/GOAL.md) into your repo
@@ -182,6 +178,16 @@ These aren't just documentation — they're the few-shot examples an agent uses 
 More examples welcome. Open a PR — more variety here means better GOAL.md files for everyone's projects.
 
 **Need help writing the fitness function?** See [`examples/scoring-scripts.md`](examples/scoring-scripts.md) for copy-paste scoring script recipes across common domains.
+
+## Share
+
+![GOAL.md score card — 47 to 83 overnight](assets/social/score-card.png)
+
+Tweet images for the [launch thread](docs/twitter-thread.md):
+
+| The Problem | The Story | The Pattern | The CTA |
+|:-----------:|:---------:|:-----------:|:-------:|
+| ![](assets/social/tweets/scene-240.png) | ![](assets/social/tweets/scene-500.png) | ![](assets/social/tweets/scene-840.png) | ![](assets/social/tweets/scene-1300.png) |
 
 ## License
 

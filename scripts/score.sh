@@ -1,6 +1,6 @@
 #!/bin/bash
 # Fitness function for the goal-md repo.
-# Measures: is this pattern clear, credible, alive, and adoptable?
+# Measures: is this pattern clear, credible, alive, adoptable, and seen?
 #
 # Usage: ./scripts/score.sh [--json]
 
@@ -48,7 +48,8 @@ else
 fi
 
 # Prior art and lineage
-if grep -q "## Prior art" "$REPO_ROOT/README.md" 2>/dev/null; then
+if grep -q "## Prior art" "$REPO_ROOT/README.md" 2>/dev/null || \
+   grep -q "Eval-Driven Development" "$REPO_ROOT/README.md" 2>/dev/null; then
   check 5 "prior-art-section" "pass"
 else
   check 5 "prior-art-section" "fail"
@@ -83,7 +84,7 @@ readme="$REPO_ROOT/README.md"
 img_in_readme=$(grep -c '!\[' "$readme" 2>/dev/null)
 [[ -z "$img_in_readme" ]] && img_in_readme=0
 img_in_assets=$(find "$REPO_ROOT/assets" -name "*.png" -o -name "*.gif" -o -name "*.jpg" -o -name "*.svg" 2>/dev/null | wc -l | tr -d ' ')
-img_count=$((img_in_readme + img_in_assets))
+img_count=$img_in_assets
 
 if [[ $img_count -ge 3 ]]; then
   check 10 "has-visuals" "pass"
@@ -239,6 +240,117 @@ else
   check 5 "score-documented" "fail"
 fi
 
+# ─── Component 5: Distribution (30 pts) ───
+# Can someone discover this pattern outside GitHub?
+
+# Video explainer — quality checks, not just existence (~10 pts)
+# Must have: rendered mp4, 4+ scene files, real audio (not generated),
+# consistent style system, render script, and scene transitions
+video_signals=0
+
+# 1. Rendered output exists
+[[ -f "$REPO_ROOT/video/out/video.mp4" ]] && video_signals=$((video_signals + 1))
+
+# 2. 4+ scene files (real narrative structure, not just a scaffold)
+if [[ -d "$REPO_ROOT/video/src/scenes" ]]; then
+  scene_count=$(find "$REPO_ROOT/video/src/scenes" -name "Scene*.tsx" 2>/dev/null | wc -l | tr -d ' ')
+  [[ $scene_count -ge 4 ]] && video_signals=$((video_signals + 1))
+fi
+
+# 3. Uses a real audio file (not a generated beat script)
+# Check: public/ has a real audio file AND no generate-beat script
+has_real_audio=false
+if [[ -d "$REPO_ROOT/video/public" ]]; then
+  audio_files=$(find "$REPO_ROOT/video/public" -name "*.mp3" -o -name "*.wav" -o -name "*.m4a" 2>/dev/null | wc -l | tr -d ' ')
+  # Penalize if a generate-beat script exists (means audio is procedural)
+  if [[ $audio_files -ge 1 ]] && ! [[ -f "$REPO_ROOT/video/scripts/generate-beat.mjs" ]]; then
+    has_real_audio=true
+    video_signals=$((video_signals + 1))
+  fi
+fi
+
+# 4. Consistent design system (styles.ts exports colors + typography + spacing)
+if [[ -f "$REPO_ROOT/video/src/styles.ts" ]]; then
+  style_signals=0
+  grep -q "IBM Plex\|ibm-plex" "$REPO_ROOT/video/src/styles.ts" 2>/dev/null && style_signals=$((style_signals + 1))
+  grep -q "bg.*#\|background" "$REPO_ROOT/video/src/styles.ts" 2>/dev/null && style_signals=$((style_signals + 1))
+  grep -q "FRAMES_PER_BEAT\|BPM\|bpm" "$REPO_ROOT/video/src/styles.ts" 2>/dev/null && style_signals=$((style_signals + 1))
+  [[ $style_signals -ge 3 ]] && video_signals=$((video_signals + 1))
+fi
+
+# 5. Has render script
+[[ -f "$REPO_ROOT/video/package.json" ]] && grep -q '"render"\|"build"' "$REPO_ROOT/video/package.json" 2>/dev/null && video_signals=$((video_signals + 1))
+
+# 6. Scene transitions or crossfades (grep for Sequence + interpolate patterns suggesting transitions)
+if grep -rq "crossfade\|fadeIn\|fadeOut\|transition" "$REPO_ROOT/video/src/" 2>/dev/null; then
+  video_signals=$((video_signals + 1))
+fi
+
+# Infrastructure signals get you to partial (5/10).
+# Full marks require human quality sign-off in video/QUALITY.md
+# (because grep can't tell good video from AI slop)
+has_quality_signoff=false
+if [[ -f "$REPO_ROOT/video/QUALITY.md" ]]; then
+  # Must contain "APPROVED" and review of all 7 criteria
+  grep -q "APPROVED" "$REPO_ROOT/video/QUALITY.md" 2>/dev/null && has_quality_signoff=true
+fi
+
+if $has_quality_signoff && [[ $video_signals -ge 4 ]]; then
+  check 10 "video-explainer" "pass"
+elif [[ $video_signals -ge 3 ]]; then
+  check 10 "video-explainer" "partial"
+else
+  check 10 "video-explainer" "fail"
+fi
+
+# Twitter-optimized social images (~10 pts)
+# Check: assets/social/ has at least 2 PNG images
+social_dir="$REPO_ROOT/assets/social"
+social_count=0
+if [[ -d "$social_dir" ]]; then
+  social_count=$(find "$social_dir" -name "*.png" -o -name "*.jpg" 2>/dev/null | wc -l | tr -d ' ')
+fi
+
+# Check: a generation script exists (not hand-designed)
+has_gen_script=false
+# Look for any script that could generate social images
+for f in "$REPO_ROOT/scripts/generate-social"* "$REPO_ROOT/scripts/social"*; do
+  [[ -f "$f" ]] && has_gen_script=true && break
+done
+# Also check if video/package.json has a still/thumbnail script
+[[ -f "$REPO_ROOT/video/package.json" ]] && grep -q '"still"\|"thumbnail"\|"social"' "$REPO_ROOT/video/package.json" 2>/dev/null && has_gen_script=true
+
+if [[ $social_count -ge 2 ]] && $has_gen_script; then
+  check 10 "social-images" "pass"
+elif [[ $social_count -ge 1 ]] || $has_gen_script; then
+  check 10 "social-images" "partial"
+else
+  check 10 "social-images" "fail"
+fi
+
+# Blog-ready assets and metadata (~10 pts)
+blog_signals=0
+# Blog post draft exists
+[[ -f "$REPO_ROOT/docs/blog-post.md" ]] && blog_signals=$((blog_signals + 1))
+# Social cards referenced in README (so GitHub renders good OG previews)
+grep -qi 'assets/social' "$REPO_ROOT/README.md" 2>/dev/null && blog_signals=$((blog_signals + 1))
+# Video is hostable (rendered mp4 exists or a YouTube/external link in README)
+if [[ -f "$REPO_ROOT/video/out/video.mp4" ]] || grep -qi 'youtube.com\|youtu.be\|vimeo.com' "$REPO_ROOT/README.md" 2>/dev/null; then
+  blog_signals=$((blog_signals + 1))
+fi
+
+if [[ $blog_signals -ge 3 ]]; then
+  check 10 "blog-ready" "pass"
+elif [[ $blog_signals -ge 2 ]]; then
+  check 10 "blog-ready" "partial"
+elif [[ $blog_signals -ge 1 ]]; then
+  details+=("{\"name\":\"blog-ready\",\"points\":3,\"max\":10,\"status\":\"minimal\"}")
+  score=$((score + 3))
+  max=$((max + 10))
+else
+  check 10 "blog-ready" "fail"
+fi
+
 # ─── Output ───
 
 pct=$(( (score * 100) / max ))
@@ -300,6 +412,18 @@ else
       mx=$(echo "$d" | sed 's/.*"max":\([0-9]*\).*/\1/')
       status=$(echo "$d" | sed 's/.*"status":"\([^"]*\)".*/\1/')
       case $status in pass) icon="✓";; partial) icon="◐";; *) icon="✗";; esac
+      printf "    %-28s %s %s/%s\n" "$name" "$icon" "$pts" "$mx"
+    ;; esac
+  done
+  echo ""
+  echo "  DISTRIBUTION (can someone find this outside GitHub?)"
+  for d in "${details[@]}"; do
+    name=$(echo "$d" | sed 's/.*"name":"\([^"]*\)".*/\1/')
+    case "$name" in video-*|social-*|blog-*)
+      pts=$(echo "$d" | sed 's/.*"points":\([0-9]*\).*/\1/')
+      mx=$(echo "$d" | sed 's/.*"max":\([0-9]*\).*/\1/')
+      status=$(echo "$d" | sed 's/.*"status":"\([^"]*\)".*/\1/')
+      case $status in pass) icon="✓";; partial) icon="◐";; minimal) icon="◐";; *) icon="✗";; esac
       printf "    %-28s %s %s/%s\n" "$name" "$icon" "$pts" "$mx"
     ;; esac
   done

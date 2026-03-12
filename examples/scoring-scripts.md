@@ -2,6 +2,10 @@
 
 Fitness functions are the hardest part of a GOAL.md to write. These are copy-paste-adapt patterns for common scenarios. Each script outputs a single JSON object with `score` and `max` so the agent can track progress.
 
+### Anti-patterns
+
+Avoid binary metrics (pass/fail) — the agent has no gradient for partial progress. Avoid metrics that saturate (coverage above ~95% becomes asymptotic and generates diminishing returns). Avoid metrics the agent can trivially game (line count, file count). The best fitness functions have a smooth gradient across the range you care about.
+
 ---
 
 ## 1. Test Coverage (pytest or jest)

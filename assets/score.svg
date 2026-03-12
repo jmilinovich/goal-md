@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="580" height="640" viewBox="0 0 580 640">
+<svg xmlns="http://www.w3.org/2000/svg" width="580" height="740" viewBox="0 0 580 740">
   <style>
     .bg { fill: #1e1e2e; rx: 12; }
     .title-bar { fill: #313244; }
@@ -8,7 +8,7 @@
     .text { fill: #cdd6f4; font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace; font-size: 13px; }
     .header { fill: #89b4fa; font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace; font-size: 13px; font-weight: bold; }
   </style>
-  <rect class="bg" width="580" height="640" />
+  <rect class="bg" width="580" height="740" />
   <rect class="title-bar" x="0" y="0" width="580" height="36" rx="12" />
   <rect class="title-bar" x="0" y="24" width="580" height="12" />
   <circle class="dot-red" cx="20" cy="18" r="6" />
@@ -17,7 +17,7 @@
   <text class="header" x="290" y="22" text-anchor="middle">./scripts/score.sh</text>
   <text class="text" x="16" y="62" xml:space="preserve">
     <tspan x="16" dy="20">═══════════════════════════════════════════</tspan>
-    <tspan x="16" dy="20">  goal-md: 100 / 100 (100%)</tspan>
+    <tspan x="16" dy="20">  goal-md: 130 / 130 (100%)</tspan>
     <tspan x="16" dy="20">═══════════════════════════════════════════</tspan>
     <tspan x="16" dy="20">  CLARITY (is the pattern well-defined?)</tspan>
     <tspan x="16" dy="20">    five-elements-defined        <tspan fill="#4ade80">✓</tspan> 10/10</tspan>
@@ -38,5 +38,9 @@
     <tspan x="16" dy="20">    dogfood-goal-md              <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
     <tspan x="16" dy="20">    template-complete            <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
     <tspan x="16" dy="20">    score-documented             <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
+    <tspan x="16" dy="20">  DISTRIBUTION (can someone find this outside GitHub?)</tspan>
+    <tspan x="16" dy="20">    video-explainer              <tspan fill="#4ade80">✓</tspan> 10/10</tspan>
+    <tspan x="16" dy="20">    social-images                <tspan fill="#4ade80">✓</tspan> 10/10</tspan>
+    <tspan x="16" dy="20">    blog-ready                   <tspan fill="#4ade80">✓</tspan> 10/10</tspan>
   </text>
 </svg>

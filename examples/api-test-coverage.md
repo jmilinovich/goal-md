@@ -83,6 +83,7 @@ Commit messages: `[COV:47→52] orders: add tests for POST /orders and GET /orde
 | Test `PATCH /api/v1/orders/{id}/cancel` | +2-3% | Cancel a pending order. Assert status transition. Test cancelling already-shipped (expect 409). Test cancelling already-cancelled (expect 409 with distinct error code `ORDER_ALREADY_CANCELLED` — the handler has two 409 branches and only one is currently covered). |
 | Test `GET /api/v1/orders` with filters | +2-3% | Pagination, `?status=pending`, `?created_after=2024-01-01`. Assert correct filtering. **Edge case**: `?status=refunded` only returns fully-refunded orders, not partial refunds — this has confused QA before and the behavior is intentional. |
 | Test `POST /api/v1/orders/{id}/refund` | +2% | Full and partial refund. Mock Stripe refund call. Assert amount validation. **The `/orders/:id/refund` endpoint returns 403 when called without `admin` or `merchant:refund` scope** — this is the only endpoint that checks fine-grained OAuth scopes instead of just role. Test both scope-missing and role-missing cases separately. |
+| Remove dead import-time SendGrid initialization from orders router | +2% | The `orders` router imports `app.services.email` which eagerly initializes a SendGrid client. Extract the initialization behind a lazy accessor so the import is side-effect-free. This eliminates the conftest patching workaround and makes every orders test simpler to write. |
 
 ### inventory module (target: 0% -> 80%+)
 
