@@ -152,6 +152,17 @@ You don't need one for a single well-defined change ("add a dark mode toggle") o
 
 ## Get started
 
+The fastest way: just tell Claude.
+
+```
+Look at github.com/jmilinovich/goal-md — read the template and examples.
+Then write me a GOAL.md for this repo and start working on it.
+```
+
+It reads the examples, pattern-matches your codebase, writes the fitness function, and starts the loop. That's the whole point — this isn't a spec you have to study, it's a file format an agent already knows how to use.
+
+Or do it manually:
+
 1. Copy [`template/GOAL.md`](template/GOAL.md) into your repo
 2. Define your fitness function (a script that outputs a number)
 3. Fill in the improvement loop and action catalog
