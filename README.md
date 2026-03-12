@@ -181,6 +181,8 @@ These aren't just documentation — they're the few-shot examples an agent uses 
 
 More examples welcome. Open a PR — more variety here means better GOAL.md files for everyone's projects.
 
+**Need help writing the fitness function?** See [`examples/scoring-scripts.md`](examples/scoring-scripts.md) for copy-paste scoring script recipes across common domains.
+
 ## License
 
 MIT
