@@ -17,7 +17,7 @@
   <text class="header" x="290" y="22" text-anchor="middle">./scripts/score.sh</text>
   <text class="text" x="16" y="62" xml:space="preserve">
     <tspan x="16" dy="20">═══════════════════════════════════════════</tspan>
-    <tspan x="16" dy="20">  goal-md: 85 / 100 (85%)</tspan>
+    <tspan x="16" dy="20">  goal-md: 100 / 100 (100%)</tspan>
     <tspan x="16" dy="20">═══════════════════════════════════════════</tspan>
     <tspan x="16" dy="20">  CLARITY (is the pattern well-defined?)</tspan>
     <tspan x="16" dy="20">    five-elements-defined        <tspan fill="#4ade80">✓</tspan> 10/10</tspan>
@@ -30,9 +30,9 @@
     <tspan x="16" dy="20">    show-the-score               <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
     <tspan x="16" dy="20">    has-voice                    <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
     <tspan x="16" dy="20">  EXAMPLES (does it show the pattern working?)</tspan>
-    <tspan x="16" dy="20">    example-count                <tspan fill="#facc15">◐</tspan> 3/10</tspan>
-    <tspan x="16" dy="20">    example-mode-variety         <tspan fill="#facc15">◐</tspan> 5/10</tspan>
-    <tspan x="16" dy="20">    real-projects                <tspan fill="#facc15">◐</tspan> 2/5</tspan>
+    <tspan x="16" dy="20">    example-count                <tspan fill="#4ade80">✓</tspan> 10/10</tspan>
+    <tspan x="16" dy="20">    example-mode-variety         <tspan fill="#4ade80">✓</tspan> 10/10</tspan>
+    <tspan x="16" dy="20">    real-projects                <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
     <tspan x="16" dy="20">  INTEGRITY (does it practice what it preaches?)</tspan>
     <tspan x="16" dy="20">    no-broken-links              <tspan fill="#4ade80">✓</tspan> 5/5</tspan>
     <tspan x="16" dy="20">    dogfood-goal-md              <tspan fill="#4ade80">✓</tspan> 5/5</tspan>

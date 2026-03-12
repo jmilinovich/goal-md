@@ -177,6 +177,9 @@ You probably don't need one when:
 | Project | Domain | Metric | Mode | Link |
 |---------|--------|--------|------|------|
 | browser-grid | Playwright plugin | 10-criterion checklist | Converge | [`examples/browser-grid.md`](examples/browser-grid.md) |
+| api-test-coverage | REST API testing | Coverage score (pytest --cov) | Converge | [`examples/api-test-coverage.md`](examples/api-test-coverage.md) |
+| perf-optimization | Web service perf | Latency/throughput composite (wrk + k6) | Continuous | [`examples/perf-optimization.md`](examples/perf-optimization.md) |
+| docs-quality | React component lib docs | Dual: docs quality + instrument quality | Split/Converge | [`examples/docs-quality.md`](examples/docs-quality.md) |
 
 More examples welcome — open a PR.
 
