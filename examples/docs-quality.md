@@ -2,6 +2,8 @@
 
 Tapestry is a React component library used by 40+ internal teams. The docs live alongside the source in `docs/` and are built with Docusaurus. They have drifted: prop tables are stale, examples don't compile, and three components shipped without any docs at all. An agent should fix the docs — but we also know the linting setup is weak (Vale has default config, markdownlint rules were never tuned, and the custom prop-check script has false positives). The agent needs to fix the measuring tools first, then fix the docs.
 
+This example showcases the **dual-score pattern**: one score for the thing you're improving (the docs), another for the tools that measure it (the linter, the prop checker, the example compiler). Most GOAL.md files have a single score. This one has two because the instruments are themselves broken — and an agent that blindly trusts a broken instrument will do the wrong work.
+
 ## Fitness Function
 
 ```bash
@@ -11,7 +13,7 @@ Tapestry is a React component library used by 40+ internal teams. The docs live 
 
 ### Metric Definition
 
-Two scores, tracked independently:
+Two scores, tracked independently. This is deliberate — read "Why two scores?" below before skipping ahead.
 
 ```
 docs_quality    = (accuracy + completeness + usability) / 75
@@ -35,6 +37,25 @@ total = docs_quality + instrument_quality   # out of 100
 | **Linter precision** | 10 | Does Vale flag real issues, not false positives? | Sample 50 Vale warnings, compare against `scripts/vale-baseline.json` ground truth. Precision = true positives / total flagged. Score = 10 * precision. |
 | **Prop-check recall** | 10 | Does prop-check catch actual drift, not miss it? | Run against `scripts/prop-drift-fixtures/` (10 known-bad files). Recall = caught / 10. Score = 10 * recall. |
 | **Example compilation** | 5 | Does the TSX extractor handle all fenced block variants? | `scripts/compile-examples.sh --self-test` runs against `scripts/example-fixtures/` (edge cases: imports, generics, multi-file). Score = 5 * (passed / total). |
+
+### Why Two Scores?
+
+Because the tools that measure documentation quality are themselves broken, and an agent that can't distinguish between "the docs are bad" and "the linter is wrong" will waste cycles fighting false positives.
+
+Here's the problem concretely: Vale flags `onChange` as a spelling error because it's not in any dictionary. The agent sees a Vale warning, "fixes" the docs by wrapping `onChange` in backticks, and the warning goes away. But the docs weren't wrong — the linter was. Score A didn't improve (the docs were already correct), but the agent burned an iteration. Worse, if the agent decides to silence the warning by disabling the spelling rule, now Vale stops catching actual misspellings, and Score A drops on the next iteration when a real typo slips through.
+
+The dual-score pattern prevents this. The agent can see that `instrument_quality` is low (the linter has false positives) and fix the linter first (add `onChange` to the vocabulary file). Then when it works on the docs, the linter is actually helpful instead of noisy.
+
+**Improving the instrument vs. improving the docs — concrete examples:**
+
+| What you're doing | Score affected | Example |
+|-------------------|----------------|---------|
+| Adding `onClick` to Vale's vocabulary file | Instrument (B) | Vale stops flagging a real prop name as a typo. Precision goes up. The docs don't change at all. |
+| Teaching `prop-check.sh` to parse `Pick<>` types | Instrument (B) | The checker now catches drift in `<DataTable>` props that it was silently missing. Recall goes up. The docs might now show a new accuracy gap. |
+| Fixing a stale prop table in `Modal.md` | Docs (A) | The `onClose` prop was renamed to `onDismiss` in v4 but the docs still say `onClose`. Accuracy goes up. The instrument didn't change. |
+| Adding an Accessibility section to `Select.md` | Docs (A) | The page was missing a required section. Completeness goes up. The instrument didn't change. |
+
+The instrument score is a meta-score. It asks: "how much can we trust the docs score?" If `instrument_quality` is 12/25, you're flying partially blind — the agent might think docs are fine when they're not, or fix things that aren't broken.
 
 ### Metric Mutability
 
@@ -69,8 +90,11 @@ repeat:
   1. ./scripts/docs-score.sh --json > /tmp/before.json
   2. Read both scores and component breakdowns
   3. Decide what to work on:
-     - If instrument_quality < 20: fix the instrument first
-       (no point fixing docs if you can't measure the fix)
+     - If instrument_quality < 20: fix the instrument first.
+       This feels counterintuitive — "why am I fixing the linter
+       when the docs are clearly broken?" — but if the linter has
+       40% false positives, you'll waste half your iterations
+       chasing ghosts. Fix the measuring stick first.
      - If instrument_quality >= 20: work on docs_quality,
        targeting the lowest component
   4. Pick highest-impact action from Action Catalog
@@ -81,8 +105,12 @@ repeat:
      - Example fix → ./scripts/compile-examples.sh docs/components/[name].md
   7. ./scripts/docs-score.sh --json > /tmp/after.json
   8. Compare: if total improved AND neither score regressed, commit
-  9. If docs_quality regressed (even if total went up), revert —
-     don't game quality by weakening the instrument
+  9. If docs_quality regressed (even if total went up), revert.
+     This is the critical guard rail: the agent must not game quality
+     by weakening the instrument. A Vale rule that catches fewer
+     things makes instrument_quality go up (fewer false positives!)
+     but if it also stops catching real issues, docs_quality drops
+     on the next iteration. The revert rule catches this.
   10. Continue
 ```
 
@@ -96,17 +124,17 @@ Example: `[D:42 I:18 → D:42 I:21] prop-check: handle optional props with defau
 
 | Action | Impact | How |
 |--------|--------|-----|
-| Add Tapestry vocab file | +2-3 pts | Create `.vale/styles/Vocab/Tapestry/accept.txt` with component names, prop names, and API terms that Vale flags as spelling errors. Run `npx vale docs/ --output=JSON`, filter for `spelling` rule, extract unique terms. |
-| Tune heading rules | +1-2 pts | Vale's default `HeadingStyle` conflicts with Docusaurus frontmatter. Add exception in `.vale/styles/Tapestry/HeadingStyle.yml` for `{/* */}` MDX comment blocks. |
-| Rebuild baseline truth set | +1 pt | Manually review 50 Vale warnings, record in `scripts/vale-baseline.json` as `{"file": "...", "line": N, "true_positive": bool}`. This is the ground truth the precision metric uses. |
+| Add Tapestry vocab file | +2-3 pts | Create `.vale/styles/Vocab/Tapestry/accept.txt` with component names, prop names, and API terms that Vale flags as spelling errors. Right now Vale flags `onChange`, `onDismiss`, `isDisabled`, `tabIndex`, `colorScheme`, and every component name as misspelled. That's ~30 of the 50 sampled warnings — all false positives. Run `npx vale docs/ --output=JSON`, filter for `spelling` rule, extract unique terms. |
+| Tune heading rules | +1-2 pts | Vale's default `HeadingStyle` expects ATX headings everywhere, but Docusaurus frontmatter's `sidebar_label` renders as a heading and gets flagged. Also, MDX `{/* */}` comment blocks near headings confuse the parser. Add exception in `.vale/styles/Tapestry/HeadingStyle.yml`. |
+| Rebuild baseline truth set | +1 pt | The current `vale-baseline.json` was auto-generated and never reviewed — it marks everything as `true_positive`, which makes precision look artificially low. Manually review 50 Vale warnings, record in `scripts/vale-baseline.json` as `{"file": "...", "line": N, "true_positive": bool}`. This is the ground truth the precision metric uses. |
 
 ### Instrument — Prop-Check Recall (target: 9/10)
 
 | Action | Impact | How |
 |--------|--------|-----|
-| Handle `Pick<>` and `Omit<>` types | +2-3 pts | `prop-check.sh` currently only parses `interface FooProps`. Add regex for `type FooProps = Pick<BarProps, 'x' \| 'y'>` patterns. Test against `scripts/prop-drift-fixtures/pick-omit.tsx`. |
-| Handle re-exported props | +1-2 pts | Components like `<DataTable>` re-export `HTMLTableElement` props. Prop-check misses these. Parse `extends HTMLAttributes<...>` in the interface declaration. |
-| Add `defaultProps` awareness | +1 pt | Props with defaults show as "missing" because the doc says "optional" but the interface says `required`. Cross-reference `defaultProps` or default parameter values. |
+| Handle `Pick<>` and `Omit<>` types | +2-3 pts | `prop-check.sh` currently only parses `interface FooProps { ... }`. But `<DataTable>` uses `type DataTableProps = Pick<HTMLTableElement, 'className' | 'role'> & { columns: Column[]; data: Row[] }` and the checker just silently skips it — zero coverage, zero warnings. Add regex for `type FooProps = Pick<BarProps, 'x' \| 'y'>` patterns. Test against `scripts/prop-drift-fixtures/pick-omit.tsx`. |
+| Handle re-exported props | +1-2 pts | Components like `<Input>` extend `HTMLInputElement` and pass through 40+ native props. Prop-check sees the interface has 4 custom props but the docs list 8 (including `placeholder`, `disabled`, etc.) and flags them as "undocumented in source." They're not undocumented — they're inherited. Parse `extends HTMLAttributes<...>` in the interface declaration. |
+| Add `defaultProps` awareness | +1 pt | Props with defaults show as "missing" because the doc says "optional (default: 'md')" but the interface says `size: Size` (required). The prop has a default value in the function signature: `({ size = 'md' })`. Cross-reference default parameter values so the checker stops flagging these as drift. |
 
 ### Instrument — Example Compilation (target: 5/5)
 
