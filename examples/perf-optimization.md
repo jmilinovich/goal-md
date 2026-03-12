@@ -4,6 +4,8 @@ You have a Node.js API (Fastify) serving product catalog reads for an e-commerce
 
 Run benchmarks. Find the bottleneck. Fix it. Benchmark again. Keep what helps, discard what doesn't. Repeat forever — there is always another millisecond to find.
 
+This is the continuous-mode showcase. The agent never finishes. It either improves or it watches. When it runs out of ideas, it waits, re-benchmarks, and catches the regression that a dependency update or data migration quietly introduced at 3am.
+
 ## Fitness Function
 
 ```bash
@@ -40,11 +42,13 @@ perf_score = (latency_score + throughput_score + cold_start_score + profile_scor
 
 ### Why continuous?
 
-Performance is not a destination. Dependencies update, V8 changes, data shape shifts. This agent should be a relentless optimization pressure that runs on a schedule or in the background. When it stops finding gains, it watches for regressions.
+Performance is not a destination. Dependencies update, V8 changes, data shape shifts. Last month a Postgres minor version bump silently changed query plan selection for our faceted search and p95 jumped from 22ms to 48ms. Nobody noticed for three days. A continuous agent would have caught it in 30 minutes.
+
+This agent should be a relentless optimization pressure that runs on a schedule or in the background. When it stops finding gains, it watches for regressions. It is the only team member that never gets bored of running the same benchmark.
 
 ### Stopping Conditions
 
-**None.** Run until a human kills it. After 5 consecutive no-improvement iterations, switch from "optimize" to "monitor" — re-run the benchmark every 30 minutes and alert (write to `perf-alerts.log`) if any metric regresses by more than 10%.
+**None.** This is the point. Run until a human kills it. After 5 consecutive no-improvement iterations, switch from "optimize" to "monitor" — re-run the benchmark every 30 minutes and alert (write to `perf-alerts.log`) if any metric regresses by more than 10%. If a regression is detected, switch back to "optimize" and fix it. The agent oscillates between hunter and watchdog forever.
 
 ## Bootstrap
 
@@ -90,15 +94,15 @@ Commit message format: `[P:71→74] latency: replace JSON.parse with flatbuffers
 | Replace `JSON.stringify` in hot path with `fast-json-stringify` | +3-5 pts | Pre-compile schema for `/api/products/:id` and `/api/search`. Fastify supports this natively via response schemas — just add the schema to the route opts. |
 | Add Redis caching for product reads | +5-8 pts | Cache `/api/products/:id` responses with 60s TTL. Key: `product:{id}`. Invalidate on write. Check `src/routes/products.ts`. |
 | Switch Postgres driver from `pg` to `postgres` (porsager) | +2-4 pts | Pipelining, prepared statements by default. Swap in `src/db/pool.ts`. Run full test suite to catch any API differences. |
-| Precompute search facets | +3-5 pts | `/api/search` currently computes facet counts per request. Materialize to `search_facets` table, refresh on write. |
-| Use `Buffer.from` + manual serialization for large arrays | +1-3 pts | Profile shows `Array.map` + object spread in `formatProducts()` is 11% of CPU. Rewrite as a for loop with pre-allocated buffer. |
+| Precompute search facets | +3-5 pts | The `/search` endpoint does N+1 queries against Postgres for facet counts — one `SELECT COUNT(*)` per category, per brand, per price bucket. That's 15-20 extra queries per search request. Materialize to a `search_facets` table, refresh on catalog write. The facets only change when products are added/updated, not on every read. |
+| Use `Buffer.from` + manual serialization for large arrays | +1-3 pts | Profile shows `Array.map` + object spread in `formatProducts()` is 11% of CPU. For a 50-item search result, that's 50 shallow copies creating 50 new objects that immediately get serialized. Rewrite as a for loop with pre-allocated array. |
 
 ### Throughput (target: 30/30)
 
 | Action | Est. Impact | Details |
 |--------|-------------|---------|
 | Enable Fastify `logger: false` in production bench | +2-3 pts | Pino logging is ~4% of throughput in profiles. Disable for bench, keep for prod via env flag. |
-| Connection pooling tuning | +2-4 pts | Current pool: `max: 10`. Profile shows connection wait time. Try `max: 25` with `idleTimeoutMillis: 30000`. Config in `src/db/pool.ts`. |
+| Connection pooling tuning | +2-4 pts | Current pool: `max: 10`. Under sustained load, wrk shows 8-12ms of connection acquisition wait — the pool is exhausted and requests queue behind each other. Try `max: 25` with `idleTimeoutMillis: 30000`. Config in `src/db/pool.ts`. |
 | Use `cluster` module — spawn workers per core | +8-12 pts | Single-core constraint is in the scoring. But if we relax it: 4 workers on a 4-core machine = near-linear scaling. Only do this if the single-core score is already maxed. |
 
 ### Cold Start (target: 15/15)
@@ -113,9 +117,20 @@ Commit message format: `[P:71→74] latency: replace JSON.parse with flatbuffers
 
 | Action | Est. Impact | Details |
 |--------|-------------|---------|
-| Eliminate event loop blocks in image resize middleware | +5 pts | `src/middleware/image.ts` does synchronous `sharp` operations. Move to worker thread or make async. Clinic Doctor flags this as a 120ms block. |
-| Break up `buildSearchQuery()` | +5 pts | `src/services/search.ts:buildSearchQuery` is 18% of CPU. It re-parses filter syntax on every call. Pre-compile filters at startup into a lookup table. |
-| Replace `moment` with `Date` arithmetic | +5 pts | `moment` appears in flame graph at 8% — only used for `.isAfter()` and `.format()`. Native `Date` + `Intl.DateTimeFormat` is zero-cost. |
+| Eliminate event loop blocks in image resize middleware | +5 pts | `src/middleware/image.ts` calls `sharp().resize().toBuffer()` synchronously in the request path for product thumbnail URLs. Clinic Doctor flags this as a 120ms event loop block — every request that includes thumbnails stalls the entire server for 120ms. Move to a worker thread or (better) pre-resize at upload time and serve from CDN. |
+| Break up `buildSearchQuery()` | +5 pts | `src/services/search.ts:buildSearchQuery` is 18% of CPU in the flamegraph. It re-parses the filter syntax string (`"category:shoes AND brand:nike AND price:50-100"`) into a Postgres query on every single request. The parser allocates a fresh AST each time. Pre-compile known filter patterns at startup into a lookup table of prepared statements. |
+| Replace `moment` with `Date` arithmetic | +5 pts | `moment` appears in flame graph at 8% — only used for `.isAfter()` and `.format('YYYY-MM-DD')` in two places. That's 8% of CPU for two date comparisons. Native `Date` + `Intl.DateTimeFormat` is zero-cost. This is the kind of thing that looks too small to matter until you see it in the profile. |
+
+## What the Agent Typically Discovers
+
+After running this against a few codebases, a pattern emerges. The action catalog gets you to about 75-80/100. The last 20 points come from things the agent finds in the flamegraph that nobody predicted:
+
+- **Hidden serialization costs.** The response schema validates on the way out, but Fastify's default `ajv` instance isn't using `removeAdditional` — so every response object gets deep-cloned for validation even when it already matches. Setting `removeAdditional: false` (we don't need stripping) and `coerceTypes: false` cut validation from 6% to 1.5%.
+- **DNS resolution on every Redis call.** The Redis client was configured with a hostname, not an IP. Under load, `dns.lookup()` showed up at 3% of CPU. Switching to IP (or adding `dns.setDefaultResultOrder('ipv4first')` + connection reuse) eliminated it.
+- **The ORM hydration tax.** `SELECT * FROM products` returns 28 columns, but `/api/products/:id` only uses 9 of them. The ORM still hydrates all 28 into a model instance, then the serializer picks 9 fields. Adding a `.select()` with only the needed columns cut response time for that route by 30%.
+- **Accidental `console.log` in production.** A debugging statement in the cart service was serializing the entire cart object on every add-to-cart. It wasn't in the hot path for product reads, so it only showed up in the k6 scenario score.
+
+The agent doesn't know these things up front. It finds them by following the flamegraph, trying a fix, and measuring. That's the whole point of continuous mode — you don't need to predict every optimization, you just need the feedback loop.
 
 ## Constraints
 
