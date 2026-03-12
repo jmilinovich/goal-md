@@ -4,9 +4,9 @@
 
 ![The GOAL.md pattern: fitness function → improvement loop → action catalog → operating mode → constraints](assets/pattern.svg)
 
-Karpathy's [autoresearch](https://github.com/karpathy/autoresearch) proved the formula: agent + fitness function + loop = overnight breakthroughs. But autoresearch only works when God hands you a scalar metric — loss goes down, paper gets better. Most software isn't like that. You have to *construct* the metric before you can optimize it.
+Karpathy's [autoresearch](https://github.com/karpathy/autoresearch) proved the formula: agent + fitness function + loop = overnight breakthroughs. But autoresearch only works when you already have a scalar metric. Loss goes down, paper gets better. Most software isn't like that. You have to *construct* the metric before you can optimize it.
 
-GOAL.md is the pattern for doing that. One file, dropped into any repo, that turns a coding agent into an autonomous improver.
+GOAL.md is the pattern for doing that. One file you drop into a repo that turns a coding agent into an autonomous improver.
 
 ## How I stumbled into this
 
@@ -25,11 +25,11 @@ GOAL.md is the pattern for doing that. One file, dropped into any repo, that tur
 
 Then I wrote a file that told Claude: here's the score, here's how to make it go up, here's when to stop. I went to bed. Woke up to 12 commits, each atomic, each pushing the score higher. 47 → 83.
 
-That file became GOAL.md. Honestly, the wild part wasn't the pattern — it was waking up to a repo that was better than when I left it.
+That file became GOAL.md. The wild part wasn't the pattern itself, it was waking up to a repo that was genuinely better than when I left it.
 
 ## Why not just a good CLAUDE.md?
 
-CLAUDE.md is a manual — it tells an agent *how to work* in your repo. GOAL.md is a reward function — it tells an agent *what "better" means* and gives it a loop to get there. The agent measures, diagnoses, acts, and verifies on its own. You don't need to be in the room.
+CLAUDE.md is a manual. It tells an agent *how to work* in your repo. GOAL.md is a reward function. It tells an agent *what "better" means* and gives it a loop to get there. The agent measures, diagnoses, acts, and verifies on its own. You don't need to be in the room.
 
 ## The five elements
 
@@ -41,9 +41,7 @@ CLAUDE.md is a manual — it tells an agent *how to work* in your repo. GOAL.md 
 ./scripts/score.sh    # → 47/100... then 52... then 61... then 83
 ```
 
-autoresearch locks `evaluate_bpb()` in a read-only file. That works when the metric is God-given. Most software metrics aren't — you have to construct them.
-
-The interesting question is *who can change the ruler:*
+autoresearch locks `evaluate_bpb()` in a read-only file. That's fine when you're optimizing loss. But most software metrics are made up by you, so who gets to change the ruler?
 
 | Mode | What it means |
 |------|---------------|
@@ -51,7 +49,7 @@ The interesting question is *who can change the ruler:*
 | **Split** | Agent can improve the *measurement instrument* but not the *definition of good*. |
 | **Open** | Agent can modify everything, including how success is measured. |
 
-Split mode is where it gets good. I had two scores: "is the routing working?" (the thing) and "can we trust the tests?" (the instrument). The agent could sharpen the instrument — add tests, fix detection — without gaming the outcome. You need a dual-score system when the agent is building its own telescope.
+Split mode is the one I actually use. I had two scores: "is the routing working?" (the thing) and "can we trust the tests?" (the instrument). The agent could sharpen the instrument (add tests, fix detection) without gaming the outcome. You need a dual-score setup when the agent is building its own telescope.
 
 ### 2. Improvement loop
 
@@ -95,7 +93,7 @@ autoresearch leaves this implicit — "everything in `train.py` is fair game." F
 
 ### 5. Constraints
 
-> Load-bearing guardrails, not suggestions. The lines the agent must never cross.
+> The lines the agent must not cross. These are load-bearing, not suggestions.
 
 ```
 - Never fabricate test results — they come from the test runner only
@@ -104,7 +102,7 @@ autoresearch leaves this implicit — "everything in `train.py` is fair game." F
 - Atomic commits — one improvement each, so reverts are clean
 ```
 
-autoresearch has the same idea: "don't modify `prepare.py`", "don't add dependencies", "simpler is better." Every autonomous system needs a fence.
+autoresearch has the same idea: "don't modify `prepare.py`", "don't add dependencies", "simpler is better." Without constraints the agent will absolutely find creative ways to make the number go up that you did not intend.
 
 ## The lineage
 
