@@ -1,82 +1,142 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="580" height="320" viewBox="0 0 580 320">
+<svg xmlns="http://www.w3.org/2000/svg" width="580" height="360" viewBox="0 0 580 360">
   <style>
     .bg { fill: #1e1e2e; }
-    .box { fill: none; stroke: #cdd6f4; stroke-width: 2; rx: 8; }
-    .box-active { fill: #313244; stroke: #89b4fa; stroke-width: 2; rx: 8; }
-    .label { fill: #cdd6f4; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; text-anchor: middle; }
-    .label-sm { fill: #6c7086; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; text-anchor: middle; }
-    .arrow { stroke: #6c7086; stroke-width: 1.5; fill: none; marker-end: url(#arrowhead); }
-    .loop-arrow { stroke: #89b4fa; stroke-width: 2; fill: none; marker-end: url(#arrowblue); }
-    .gate-yes { fill: #a6e3a1; font-family: 'SF Mono', monospace; font-size: 11px; }
-    .gate-no { fill: #f87171; font-family: 'SF Mono', monospace; font-size: 11px; }
-    .file { fill: #f9e2af; font-family: 'SF Mono', monospace; font-size: 12px; font-weight: bold; text-anchor: middle; }
+    .box { fill: #313244; stroke: #89b4fa; stroke-width: 2; rx: 8; }
+    .box-dim { fill: none; stroke: #45475a; stroke-width: 1.5; rx: 8; }
+    .label { fill: #cdd6f4; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; text-anchor: middle; dominant-baseline: central; }
+    .label-sm { fill: #6c7086; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 10px; text-anchor: middle; }
+    .label-xs { fill: #585b70; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 9px; text-anchor: middle; }
+    .arrow { stroke: #6c7086; stroke-width: 1.5; fill: none; marker-end: url(#arrow-gray); }
+    .arrow-blue { stroke: #89b4fa; stroke-width: 2; fill: none; marker-end: url(#arrow-blue); }
+    .arrow-green { stroke: #a6e3a1; stroke-width: 1.5; fill: none; marker-end: url(#arrow-green); }
+    .arrow-red { stroke: #f87171; stroke-width: 1.5; fill: none; marker-end: url(#arrow-red); }
+    .gate { fill: none; stroke: #cdd6f4; stroke-width: 2; }
+    .gate-yes { fill: #a6e3a1; font-family: 'SF Mono', monospace; font-size: 10px; text-anchor: start; }
+    .gate-no { fill: #f87171; font-family: 'SF Mono', monospace; font-size: 10px; text-anchor: start; }
+    .file { fill: #f9e2af; font-family: 'SF Mono', monospace; font-size: 13px; font-weight: bold; text-anchor: middle; }
+    .section { fill: #89b4fa; font-family: 'SF Mono', monospace; font-size: 10px; text-anchor: start; opacity: 0.7; }
+    .score-dot { fill: #89b4fa; }
+    .score-line { stroke: #89b4fa; stroke-width: 1.5; fill: none; opacity: 0.5; }
+    .score-text { fill: #6c7086; font-family: 'SF Mono', monospace; font-size: 9px; text-anchor: middle; }
+    .score-num { fill: #cdd6f4; font-family: 'SF Mono', monospace; font-size: 10px; text-anchor: middle; font-weight: bold; }
   </style>
   <defs>
-    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="#6c7086" />
+    <marker id="arrow-gray" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <polygon points="0 0, 7 2.5, 0 5" fill="#6c7086" />
     </marker>
-    <marker id="arrowblue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="#89b4fa" />
+    <marker id="arrow-blue" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <polygon points="0 0, 7 2.5, 0 5" fill="#89b4fa" />
+    </marker>
+    <marker id="arrow-green" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <polygon points="0 0, 7 2.5, 0 5" fill="#a6e3a1" />
+    </marker>
+    <marker id="arrow-red" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <polygon points="0 0, 7 2.5, 0 5" fill="#f87171" />
     </marker>
   </defs>
-  <rect class="bg" width="580" height="320" rx="12" />
 
-  <!-- GOAL.md file icon -->
-  <text class="file" x="290" y="30">GOAL.md</text>
+  <rect class="bg" width="580" height="360" rx="12" />
 
-  <!-- Five boxes -->
-  <rect class="box-active" x="20" y="50" width="100" height="50" />
-  <text class="label" x="70" y="72">Fitness</text>
-  <text class="label" x="70" y="87">Function</text>
+  <!-- Title -->
+  <text class="file" x="290" y="24">GOAL.md</text>
+  <text class="label-sm" x="290" y="40">the five elements</text>
 
-  <rect class="box-active" x="140" y="50" width="100" height="50" />
-  <text class="label" x="190" y="80">Loop</text>
+  <!-- Five element boxes across top -->
+  <rect class="box" x="16" y="54" width="100" height="40" />
+  <text class="label" x="66" y="74">Fitness Fn</text>
 
-  <rect class="box-active" x="260" y="50" width="100" height="50" />
-  <text class="label" x="310" y="72">Action</text>
-  <text class="label" x="310" y="87">Catalog</text>
+  <rect class="box" x="128" y="54" width="100" height="40" />
+  <text class="label" x="178" y="74">Loop</text>
 
-  <rect class="box-active" x="380" y="50" width="100" height="50" />
-  <text class="label" x="430" y="80">Mode</text>
+  <rect class="box" x="240" y="54" width="100" height="40" />
+  <text class="label" x="290" y="74">Actions</text>
 
-  <rect class="box-active" x="500" y="50" width="60" height="50" />
-  <text class="label" x="530" y="72">Guard</text>
-  <text class="label" x="530" y="87">rails</text>
+  <rect class="box" x="352" y="54" width="100" height="40" />
+  <text class="label" x="402" y="74">Mode</text>
 
-  <!-- The loop visualization -->
+  <rect class="box" x="464" y="54" width="100" height="40" />
+  <text class="label" x="514" y="74">Guardrails</text>
+
+  <!-- Separator -->
+  <line x1="30" y1="110" x2="550" y2="110" stroke="#45475a" stroke-width="1" stroke-dasharray="4,4" />
+  <text class="section" x="30" y="126">improvement loop</text>
+
+  <!-- Loop: Measure -> Diagnose -> Act -> Gate -->
   <!-- Measure -->
-  <rect class="box" x="60" y="140" width="120" height="40" />
-  <text class="label" x="120" y="165">Measure</text>
-  <text class="label-sm" x="120" y="195">score.sh → 47</text>
+  <rect class="box-dim" x="30" y="138" width="110" height="44" />
+  <text class="label" x="85" y="155">Measure</text>
+  <text class="label-xs" x="85" y="172">score.sh</text>
+
+  <!-- Arrow Measure -> Diagnose -->
+  <path class="arrow" d="M 140 160 L 168 160" />
 
   <!-- Diagnose -->
-  <path class="arrow" d="M 180 160 L 220 160" />
-  <rect class="box" x="220" y="140" width="120" height="40" />
-  <text class="label" x="280" y="165">Diagnose</text>
-  <text class="label-sm" x="280" y="195">weakest: health</text>
+  <rect class="box-dim" x="170" y="138" width="110" height="44" />
+  <text class="label" x="225" y="155">Diagnose</text>
+  <text class="label-xs" x="225" y="172">find weakest</text>
+
+  <!-- Arrow Diagnose -> Act -->
+  <path class="arrow" d="M 280 160 L 308 160" />
 
   <!-- Act -->
-  <path class="arrow" d="M 340 160 L 380 160" />
-  <rect class="box" x="380" y="140" width="120" height="40" />
-  <text class="label" x="440" y="165">Act</text>
-  <text class="label-sm" x="440" y="195">fix broken test</text>
+  <rect class="box-dim" x="310" y="138" width="110" height="44" />
+  <text class="label" x="365" y="155">Act</text>
+  <text class="label-xs" x="365" y="172">from catalog</text>
 
-  <!-- Gate -->
-  <path class="arrow" d="M 440 180 L 440 230" />
-  <polygon points="440,230 410,260 440,290 470,260" fill="none" stroke="#cdd6f4" stroke-width="2" />
-  <text class="label" x="440" y="265">Better?</text>
+  <!-- Arrow Act -> Gate -->
+  <path class="arrow" d="M 420 160 L 448 160" />
 
-  <!-- Yes: commit -->
-  <text class="gate-yes" x="480" y="255">yes →</text>
-  <text class="label-sm" x="530" y="255">commit</text>
+  <!-- Gate diamond -->
+  <polygon class="gate" points="498,160 468,185 498,210 528,185" />
+  <text class="label" x="498" y="186" style="font-size: 10px">Better?</text>
 
-  <!-- No: revert -->
-  <text class="gate-no" x="480" y="280">no →</text>
-  <text class="label-sm" x="530" y="280">revert</text>
+  <!-- Yes path: down-right -->
+  <path class="arrow-green" d="M 528 185 L 555 185" />
+  <text class="gate-yes" x="538" y="177">yes</text>
+  <text class="label-xs" x="555" y="198" style="fill: #a6e3a1">commit</text>
 
-  <!-- Loop back arrow -->
-  <path class="loop-arrow" d="M 410 260 C 300 310 150 310 90 200 L 90 180" />
+  <!-- No path: straight down -->
+  <path class="arrow-red" d="M 498 210 L 498 228" />
+  <text class="gate-no" x="508" y="224">no</text>
+  <text class="label-xs" x="498" y="242" style="fill: #f87171">revert</text>
 
-  <!-- Score progression at bottom -->
-  <text class="label-sm" x="290" y="312">47 → 52 → 61 → 68 → 74 → 79 → 83</text>
+  <!-- Loop-back arrow (blue, the main visual) -->
+  <path class="arrow-blue" d="M 468 185 C 380 250, 100 250, 55 200 L 55 182" />
+
+  <!-- Separator -->
+  <line x1="30" y1="262" x2="550" y2="262" stroke="#45475a" stroke-width="1" stroke-dasharray="4,4" />
+  <text class="section" x="30" y="278">score trajectory</text>
+
+  <!-- Score progression as upward trajectory dots+line -->
+  <!-- Baseline: y=340 = 0, y=290 = 100. Each score maps linearly. -->
+  <!-- 47: y=340-47*0.5=316.5, 52: 314, 61: 309.5, 68: 306, 74: 303, 79: 300.5, 83: 298.5 -->
+  <!-- Spread across x: 60, 130, 210, 290, 370, 440, 510 -->
+
+  <!-- Connecting line -->
+  <polyline class="score-line" points="60,330 130,325 210,316 290,310 370,304 440,300 510,296" />
+
+  <!-- Dots and labels -->
+  <circle class="score-dot" cx="60" cy="330" r="3.5" />
+  <text class="score-num" x="60" y="346">47</text>
+
+  <circle class="score-dot" cx="130" cy="325" r="3.5" />
+  <text class="score-num" x="130" y="346">52</text>
+
+  <circle class="score-dot" cx="210" cy="316" r="3.5" />
+  <text class="score-num" x="210" y="346">61</text>
+
+  <circle class="score-dot" cx="290" cy="310" r="4" />
+  <text class="score-num" x="290" y="346">68</text>
+
+  <circle class="score-dot" cx="370" cy="304" r="4" />
+  <text class="score-num" x="370" y="346">74</text>
+
+  <circle class="score-dot" cx="440" cy="300" r="4.5" />
+  <text class="score-num" x="440" y="346">79</text>
+
+  <circle class="score-dot" cx="510" cy="296" r="5" opacity="0.9" />
+  <text class="score-num" x="510" y="346" style="fill: #a6e3a1">83</text>
+
+  <!-- Upward trajectory hint: a faint dashed line continuing -->
+  <line x1="510" y1="296" x2="555" y2="292" stroke="#89b4fa" stroke-width="1" stroke-dasharray="3,3" opacity="0.3" />
 </svg>
