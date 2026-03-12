@@ -75,6 +75,8 @@ repeat:
 
 This is the same structure as autoresearch (`modify train.py → run → check val_bpb → keep or git reset`), just generalized beyond training runs.
 
+Each iteration appends one line to `iterations.jsonl` — before/after scores, the action taken, and whether it was kept or reverted. Future sessions read this log to avoid repeating failed experiments and to build on what worked.
+
 ### 3. Action catalog
 
 > A menu of concrete moves, ranked by impact. Tells the agent *where to spend its time.*
@@ -132,7 +134,7 @@ autoresearch (Karpathy, Mar 2026)
             Domain: any software project with an optimization goal
 ```
 
-See also: **Eval-Driven Development** ([evaldriven.org](https://evaldriven.org/)) — measurable correctness specs, but a methodology for humans, not a file format for agents. **AGENTS.md** (Google, OpenAI) — proved agents need repo-level context files, but descriptive ("how we work") not directive ("what to optimize"). **Ralph Wiggum** (Huntley) — persistent bash loop with a circuit breaker, but no numeric fitness function. **GOAP** (game AI, 2003) — action catalogs with preconditions and effects; LLM agents need less formalism but the idea is the same.
+See also: **Eval-Driven Development** ([evaldriven.org](https://evaldriven.org/)) — measurable correctness specs, but a methodology for humans, not a file format for agents. **AGENTS.md** (Google, OpenAI) — proved agents need repo-level context files, but descriptive ("how we work") not directive ("what to optimize"). **Ralph Wiggum** (Huntley) — persistent bash loop with a circuit breaker, but no numeric fitness function. **GOAP** (game AI, 2003) — action catalogs with preconditions and effects; LLM agents need less formalism but the idea is the same. **GEPA** (Khattab et al.) — multi-objective prompt evolution with fitness functions; the iteration log pattern here borrows from their approach of tracking what worked across generations.
 
 ## This repo dogfoods itself
 
