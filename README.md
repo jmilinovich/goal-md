@@ -122,15 +122,17 @@ autoresearch (Karpathy, Mar 2026)
             Domain: any software project with an optimization goal
 ```
 
-## Prior art
+## What we learned from prior art
 
-| Concept | What it contributes | What it lacks |
-|---------|-------------------|---------------|
-| **autoresearch** (Karpathy, 2026) | Immutable fitness function, keep/discard gate, "never stop" loop | Domain-specific, no action catalog, single scalar only |
-| **Eval-Driven Development** ([evaldriven.org](https://evaldriven.org/)) | Correctness specs with measurable thresholds | No agent-facing file format, no improvement loop |
-| **AGENTS.md** (Google, OpenAI, 20k+ repos) | Conventions and build commands for AI agents | Purely descriptive — no goals, no scores, no loop |
-| **Ralph Wiggum** (Huntley, Claude Code plugin) | Persistent bash loop, circuit breaker | No numeric fitness function, no action catalog |
-| **GOAP** (game AI, 2003) | Action inventory with preconditions and effects | Not LLM-oriented |
+**autoresearch** (Karpathy, 2026) is the direct ancestor. It nailed the core insight: immutable fitness function + keep/discard gate + "never stop" loop. GOAL.md exists because that formula is domain-locked to LLM training. We generalized the fitness function (constructed metrics, dual scores) and added the parts autoresearch leaves implicit (action catalog, operating modes).
+
+**Eval-Driven Development** ([evaldriven.org](https://evaldriven.org/)) showed that correctness specs with measurable thresholds are powerful. But it's a methodology for humans, not a file format for agents. No loop, no autonomy.
+
+**AGENTS.md** (Google, OpenAI, adopted by 20k+ repos) proved that agents need repo-level context files. But AGENTS.md is purely descriptive — build commands and conventions. It tells an agent *how your repo works*, not *what to optimize*. GOAL.md and AGENTS.md are complementary, not competing.
+
+**Ralph Wiggum** (Huntley, Claude Code plugin) got the "persistent bash loop with a circuit breaker" part right — keep the agent running, stop it if things go sideways. What's missing is the numeric fitness function that tells the loop whether it's actually making progress.
+
+**GOAP** (game AI, 2003) invented the action catalog with preconditions and effects two decades ago. Great idea, wrong era. LLM agents don't need formal precondition graphs — they need a prioritized menu and the judgment to pick from it.
 
 ## This repo dogfoods itself
 
