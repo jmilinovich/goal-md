@@ -25,7 +25,7 @@ GOAL.md is the pattern for doing that. One file, dropped into any repo, that tur
 
 Then I wrote a file that told Claude: here's the score, here's how to make it go up, here's when to stop. I went to bed. Woke up to 12 commits, each atomic, each pushing the score higher. 47 → 83.
 
-That file became GOAL.md.
+That file became GOAL.md. Honestly, the wild part wasn't the pattern — it was waking up to a repo that was better than when I left it.
 
 ## Why not just a good CLAUDE.md?
 
@@ -122,7 +122,7 @@ autoresearch (Karpathy, Mar 2026)
             Domain: any software project with an optimization goal
 ```
 
-## What we learned from prior art
+## Prior art — what we learned
 
 **autoresearch** (Karpathy, 2026) is the direct ancestor. It nailed the core insight: immutable fitness function + keep/discard gate + "never stop" loop. GOAL.md exists because that formula is domain-locked to LLM training. We generalized the fitness function (constructed metrics, dual scores) and added the parts autoresearch leaves implicit (action catalog, operating modes).
 
