@@ -124,17 +124,17 @@ autoresearch (Karpathy, Mar 2026)
             Domain: any software project with an optimization goal
 ```
 
-## Prior art — what we learned
+## Prior art
 
-**autoresearch** (Karpathy, 2026) is the direct ancestor. It nailed the core insight: immutable fitness function + keep/discard gate + "never stop" loop. GOAL.md exists because that formula is domain-locked to LLM training. We generalized the fitness function (constructed metrics, dual scores) and added the parts autoresearch leaves implicit (action catalog, operating modes).
+**autoresearch** (Karpathy, 2026) is the direct ancestor and the reason this exists. Immutable fitness function + keep/discard gate + "never stop" loop. GOAL.md generalizes the fitness function (constructed metrics, dual scores) and makes explicit the parts autoresearch doesn't need to spell out because it's only doing one thing (action catalog, operating modes).
 
-**Eval-Driven Development** ([evaldriven.org](https://evaldriven.org/)) showed that correctness specs with measurable thresholds are powerful. But it's a methodology for humans, not a file format for agents. No loop, no autonomy.
+**Eval-Driven Development** ([evaldriven.org](https://evaldriven.org/)) — correctness specs with measurable thresholds. Good ideas but it's a methodology for humans, not a file format for agents. No loop, no autonomy.
 
-**AGENTS.md** (Google, OpenAI, adopted by 20k+ repos) proved that agents need repo-level context files. But AGENTS.md is purely descriptive — build commands and conventions. It tells an agent *how your repo works*, not *what to optimize*. GOAL.md and AGENTS.md are complementary, not competing.
+**AGENTS.md** (Google, OpenAI, adopted by 20k+ repos) proved agents need repo-level context files. But AGENTS.md is descriptive: build commands, conventions, "here's how we do things." It tells an agent *how your repo works*, not *what to optimize*. You want both.
 
-**Ralph Wiggum** (Huntley, Claude Code plugin) got the "persistent bash loop with a circuit breaker" part right — keep the agent running, stop it if things go sideways. What's missing is the numeric fitness function that tells the loop whether it's actually making progress.
+**Ralph Wiggum** (Huntley, Claude Code plugin) nailed the "persistent bash loop with a circuit breaker" part. Keep the agent running, stop it when things go sideways. What it doesn't have is a numeric fitness function that tells the loop whether it's making progress or just making changes.
 
-**GOAP** (game AI, 2003) invented the action catalog with preconditions and effects two decades ago. Great idea, wrong era. LLM agents don't need formal precondition graphs — they need a prioritized menu and the judgment to pick from it.
+**GOAP** (game AI, 2003) invented the action catalog with preconditions and effects two decades ago. LLM agents don't need formal precondition graphs though. A prioritized menu and enough judgment to pick from it is plenty.
 
 ## This repo dogfoods itself
 
@@ -142,20 +142,13 @@ This repo has its own [`GOAL.md`](GOAL.md) and scoring script:
 
 ![Current score output from ./scripts/score.sh](assets/score.svg)
 
-A future Claude session can pick up the GOAL.md in this repo and work autonomously to improve the score. Turtles all the way down.
+A future Claude session can pick up the GOAL.md in this repo and keep improving the score. The scoring script is just bash and `jq` so it's not exactly robust, but it works.
 
 ## When you need a GOAL.md
 
-You probably need one when:
-- The work is an **optimization loop**, not a one-shot task
-- "Better" requires a **constructed metric**, not just "tests pass"
-- You want the agent to be **autonomous** across multiple sessions
-- You want to go to sleep and wake up to progress
+You need one when the work is an optimization loop, not a one-shot task. When "better" requires a metric you have to construct, not just "tests pass." When you want to go to sleep and wake up to progress.
 
-You probably don't need one when:
-- It's a single well-defined change ("add a dark mode toggle")
-- "Done" is obvious (tests pass, types check, PR approved)
-- A CLAUDE.md with good instructions is enough
+You don't need one for a single well-defined change ("add a dark mode toggle") or when "done" is obvious. If a CLAUDE.md with good instructions is enough, it's enough.
 
 ## Get started
 
@@ -173,7 +166,7 @@ You probably don't need one when:
 | perf-optimization | Web service perf | Latency/throughput composite (wrk + k6) | Continuous | [`examples/perf-optimization.md`](examples/perf-optimization.md) |
 | docs-quality | React component lib docs | Dual: docs quality + instrument quality | Split/Converge | [`examples/docs-quality.md`](examples/docs-quality.md) |
 
-More examples welcome — open a PR.
+More examples welcome. Open a PR.
 
 ## License
 
