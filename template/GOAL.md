@@ -1,3 +1,14 @@
+<!--
+Quick start:
+  1. Copy this file into your repo as GOAL.md
+  2. Fill in the [bracketed] sections below
+  3. Delete all the guidance comments (the <!-- blocks)
+  4. Run your fitness function command to verify it works
+  5. Point an agent at it: "Read GOAL.md and follow the improvement loop"
+
+See examples/ for complete GOAL.md files you can reference.
+-->
+
 # Goal: [Name]
 
 ## Fitness Function
