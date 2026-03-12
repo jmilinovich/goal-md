@@ -1,8 +1,8 @@
 # Goal: Bring Storefront API test coverage from 47% to 90%
 
-We have a FastAPI service (`storefront-api`) with 43 endpoints across 6 resource groups. Half of them have zero test coverage. The test suite takes 12 seconds to run and most of the existing tests are for the auth and products modules — everything else is bare.
+We have a FastAPI service (`storefront-api`) with 43 endpoints across 6 resource groups. Half of them have zero test coverage. The test suite takes 12 seconds to run and most of the existing tests are for the auth and products modules — everything else was written during a hackathon and never got tests.
 
-An agent should be able to grind through this autonomously: pick the next uncovered endpoint, write tests, run them, check coverage, commit, repeat.
+An agent should be able to grind through this autonomously: pick the next uncovered endpoint, write tests, run them, check coverage, commit, repeat. The hard part isn't writing the tests — it's that half the untested code has implicit dependencies on Stripe webhook state or assumes a specific order of database seeding that you only discover when you actually try to call the endpoint in isolation.
 
 ## Fitness Function
 
@@ -78,39 +78,47 @@ Commit messages: `[COV:47→52] orders: add tests for POST /orders and GET /orde
 
 | Action | Impact | How |
 |--------|--------|-----|
-| Test `POST /api/v1/orders` | +4-6% | Create order with valid cart. Assert 201, check response schema. Mock Stripe payment intent. |
-| Test `GET /api/v1/orders/{id}` | +2-3% | Seed an order, fetch by ID. Test 200 and 404. |
-| Test `PATCH /api/v1/orders/{id}/cancel` | +2-3% | Cancel a pending order. Assert status transition. Test cancelling already-shipped (expect 409). |
-| Test `GET /api/v1/orders` with filters | +2-3% | Pagination, `?status=pending`, `?created_after=2024-01-01`. Assert correct filtering. |
-| Test `POST /api/v1/orders/{id}/refund` | +2% | Full and partial refund. Mock Stripe refund call. Assert amount validation. |
+| Test `POST /api/v1/orders` | +4-6% | Create order with valid cart. Assert 201, check response schema. Mock Stripe payment intent. **Gotcha**: the handler calls `inventory.reserve()` internally — if you don't seed inventory for the SKUs in your cart, you get a 409 that looks like a Stripe error but is actually an inventory error. Ask me how I know. |
+| Test `GET /api/v1/orders/{id}` | +2-3% | Seed an order, fetch by ID. Test 200 and 404. Also test fetching another merchant's order — should 404, not 403 (we intentionally don't leak existence). |
+| Test `PATCH /api/v1/orders/{id}/cancel` | +2-3% | Cancel a pending order. Assert status transition. Test cancelling already-shipped (expect 409). Test cancelling already-cancelled (expect 409 with distinct error code `ORDER_ALREADY_CANCELLED` — the handler has two 409 branches and only one is currently covered). |
+| Test `GET /api/v1/orders` with filters | +2-3% | Pagination, `?status=pending`, `?created_after=2024-01-01`. Assert correct filtering. **Edge case**: `?status=refunded` only returns fully-refunded orders, not partial refunds — this has confused QA before and the behavior is intentional. |
+| Test `POST /api/v1/orders/{id}/refund` | +2% | Full and partial refund. Mock Stripe refund call. Assert amount validation. **The `/orders/:id/refund` endpoint returns 403 when called without `admin` or `merchant:refund` scope** — this is the only endpoint that checks fine-grained OAuth scopes instead of just role. Test both scope-missing and role-missing cases separately. |
 
 ### inventory module (target: 0% -> 80%+)
 
 | Action | Impact | How |
 |--------|--------|-----|
-| Test `GET /api/v1/inventory/{sku}` | +3-4% | Seed inventory records, fetch by SKU. Test 200 response with `quantity`, `reserved`, `available` fields. |
-| Test `POST /api/v1/inventory/adjust` | +3-4% | Positive and negative adjustments. Assert new quantity. Test negative-below-zero (expect 422). |
-| Test `POST /api/v1/inventory/reserve` | +2-3% | Reserve stock for an order. Assert `reserved` field increments. Test over-reserve (expect 409). |
-| Test `POST /api/v1/inventory/bulk-import` | +2-3% | Upload CSV fixture. Assert all SKUs created. Test malformed CSV (expect 422 with row-level errors). |
+| Test `GET /api/v1/inventory/{sku}` | +3-4% | Seed inventory records, fetch by SKU. Test 200 response with `quantity`, `reserved`, `available` fields. **Note**: `available` is computed (`quantity - reserved`), not stored — verify the math is right when `reserved > 0`. |
+| Test `POST /api/v1/inventory/adjust` | +3-4% | Positive and negative adjustments. Assert new quantity. Test negative-below-zero (expect 422). Also test adjustment of exactly zero — it's allowed but returns 200 with no change, which is weird but intentional. |
+| Test `POST /api/v1/inventory/reserve` | +2-3% | Reserve stock for an order. Assert `reserved` field increments. Test over-reserve (expect 409). **Concurrency note**: two simultaneous reserves can both succeed if they read the same snapshot — the handler uses `SELECT ... FOR UPDATE` but only inside a transaction. Worth testing with `available = 1` and two rapid reserve calls. |
+| Test `POST /api/v1/inventory/bulk-import` | +2-3% | Upload CSV fixture. Assert all SKUs created. Test malformed CSV (expect 422 with row-level errors). The error response includes `{"errors": [{"row": 3, "field": "quantity", "message": "..."}]}` — assert the structure, not just the status code. |
 | Test `GET /api/v1/inventory` with low-stock filter | +1-2% | `?below_threshold=10`. Assert only low-stock items returned. |
 
 ### webhooks module (target: 0% -> 75%+)
 
 | Action | Impact | How |
 |--------|--------|-----|
-| Test `POST /api/v1/webhooks` | +2-3% | Register a webhook URL with event types. Assert 201. Test duplicate URL (expect 409). |
+| Test `POST /api/v1/webhooks` | +2-3% | Register a webhook URL with event types. Assert 201. Test duplicate URL (expect 409). Also test registering with an unreachable URL — the handler does a HEAD check on registration and returns 422 if the URL doesn't respond within 5s. Mock this with `respx`. |
 | Test `DELETE /api/v1/webhooks/{id}` | +1-2% | Remove a registration. Assert 204. Test nonexistent (expect 404). |
-| Test `GET /api/v1/webhooks` | +1% | List all registrations for the authenticated merchant. |
-| Test webhook delivery retry logic | +3-4% | Seed a failed delivery, trigger retry via `POST /api/v1/webhooks/{id}/retry`. Mock the target URL. Assert exponential backoff headers. |
-| Test HMAC signature verification | +2-3% | The `X-Storefront-Signature` header. Compute expected HMAC, assert middleware validates. Test tampered payload (expect 401). |
+| Test `GET /api/v1/webhooks` | +1% | List all registrations for the authenticated merchant. Should not return other merchants' webhooks — seed two merchants, assert isolation. |
+| Test webhook delivery retry logic | +3-4% | Seed a failed delivery, trigger retry via `POST /api/v1/webhooks/{id}/retry`. Mock the target URL. Assert exponential backoff headers. The retry schedule is 1s, 5s, 25s, 125s — the `next_retry_at` field in the response should reflect this. |
+| Test HMAC signature verification | +2-3% | The `X-Storefront-Signature` header. Compute expected HMAC, assert middleware validates. Test tampered payload (expect 401). **The signing key rotates** — `WEBHOOK_SIGNING_KEY` in config. Both the current and previous key should be accepted during the rotation window. |
 
 ### admin module (target: 33% -> 80%+)
 
 | Action | Impact | How |
 |--------|--------|-----|
-| Test `GET /api/v1/admin/metrics` | +2% | Assert response includes `total_orders`, `revenue_30d`, `active_users`. Requires admin role — test with regular user (expect 403). |
-| Test `POST /api/v1/admin/users/{id}/suspend` | +2-3% | Suspend a user. Assert they can't authenticate after. Test suspending an admin (expect 403). |
-| Test `GET /api/v1/admin/audit-log` | +2-3% | Seed some actions, query with `?action=order.cancel&since=2024-06-01`. Assert pagination, assert log entries have `actor`, `action`, `timestamp`, `details`. |
+| Test `GET /api/v1/admin/metrics` | +2% | Assert response includes `total_orders`, `revenue_30d`, `active_users`. Requires admin role — test with regular user (expect 403). **The `revenue_30d` field is a string like `"12345.67"`, not a float** — the serializer uses `Decimal` to avoid floating-point drift. Assert the type. |
+| Test `POST /api/v1/admin/users/{id}/suspend` | +2-3% | Suspend a user. Assert they can't authenticate after. Test suspending an admin (expect 403 — admins can't suspend other admins, only superadmins can). Test suspending yourself (expect 403 with `CANNOT_SELF_SUSPEND`). |
+| Test `GET /api/v1/admin/audit-log` | +2-3% | Seed some actions, query with `?action=order.cancel&since=2024-06-01`. Assert pagination, assert log entries have `actor`, `action`, `timestamp`, `details`. **Pagination uses cursor, not offset** — the `next` field is an opaque token, not a page number. |
+
+## Known Issues
+
+Things the agent will run into and should work around, not try to fix:
+
+- **`conftest.py` has a global `event_loop` fixture** that conflicts with `pytest-asyncio` 0.23+. If you see `RuntimeError: Event loop is closed`, pin `pytest-asyncio<0.23` in the test deps. We know. It's on the backlog.
+- **The `orders` router imports `app.services.email`** which tries to initialize a SendGrid client at import time. The existing `conftest.py` patches this at the module level, but if you import the router in a new way (e.g., for type hints), the patch might not be active yet. Always import through the test client, not directly.
+- **SQLite doesn't enforce foreign keys by default.** The test DB config has `PRAGMA foreign_keys = ON` but this sometimes gets lost if you create a second connection. If a test passes locally but shouldn't (e.g., inserting an order for a nonexistent user), this is probably why.
 
 ## Constraints
 
@@ -120,6 +128,7 @@ Commit messages: `[COV:47→52] orders: add tests for POST /orders and GET /orde
 4. **No `# pragma: no cover`** — Don't game the metric. If code is untestable, note it in the commit message and move on.
 5. **Tests must be independent** — No ordering dependencies. Each test sets up its own fixtures via factories. `pytest-randomly` is in the dev deps for a reason.
 6. **Keep the suite under 30 seconds** — If a new test is slow, it's probably hitting something it shouldn't be. Fix the mock.
+7. **Use `factories.py` for all test data** — Don't hand-build dicts. The factories handle FK relationships and defaults. If a factory doesn't exist for the model you need, add one — don't inline the creation.
 
 ## File Map
 
