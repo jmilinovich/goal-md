@@ -85,6 +85,8 @@ autoresearch leaves this implicit — "everything in `train.py` is fair game." F
 
 > How long is the leash? Same agent, different levels of autonomy.
 
+![Three operating modes compared: Converge stops when the score hits a target, Continuous runs unattended overnight, Supervised pauses at human checkpoints](assets/modes.svg)
+
 | Mode | When to use |
 |------|-------------|
 | **Converge** | Stop when criteria met. "Get every score above 80, then report." |
@@ -105,6 +107,8 @@ autoresearch leaves this implicit — "everything in `train.py` is fair game." F
 autoresearch has the same idea: "don't modify `prepare.py`", "don't add dependencies", "simpler is better." Without constraints the agent will absolutely find creative ways to make the number go up that you did not intend.
 
 ## The lineage
+
+![Lineage timeline from autoresearch to autoresearch-anything to GOAL.md, showing each project's contributions: fitness function and loop, generalized metric, then dual scores, action catalog, and modes](assets/lineage.svg)
 
 ```
 autoresearch (Karpathy, Mar 2026)
