@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&amp;family=IBM+Plex+Sans:wght@400;600;700&amp;display=swap');
+    </style>
+  </defs>
+
+  <!-- White background -->
+  <rect width="1200" height="675" fill="#FFFFFF" />
+
+  <!-- Top accent stripe -->
+  <rect width="1200" height="4" fill="#0055FF" />
+
+  <!-- GOAL.md brand mark top-right -->
+  <text x="1152" y="60" text-anchor="end" font-family="'IBM Plex Sans', sans-serif" font-weight="700" font-size="28" letter-spacing="-0.03em" fill="#0055FF">GOAL.md</text>
+
+  <!-- Score climbing display -->
+  <!-- Old score -->
+  <text x="200" y="320" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-weight="700" font-size="160" fill="#FF3333">47</text>
+  <text x="200" y="360" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-weight="400" font-size="20" fill="#AAAAAA">before</text>
+
+  <!-- Arrow -->
+  <line x1="360" y1="270" x2="520" y2="270" stroke="#E0E0E0" stroke-width="3" />
+  <polygon points="520,255 550,270 520,285" fill="#E0E0E0" />
+
+  <!-- New score -->
+  <text x="740" y="320" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-weight="700" font-size="160" fill="#00AA44">83</text>
+  <text x="740" y="360" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-weight="400" font-size="20" fill="#AAAAAA">after</text>
+
+  <!-- Delta badge -->
+  <rect x="900" y="235" width="120" height="48" rx="24" fill="#00AA44" />
+  <text x="960" y="266" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-weight="700" font-size="22" fill="#FFFFFF">+36</text>
+
+  <!-- Headline -->
+  <text x="600" y="460" text-anchor="middle" font-family="'IBM Plex Sans', sans-serif" font-weight="700" font-size="36" letter-spacing="-0.03em" fill="#0055FF">12 atomic commits while you slept</text>
+
+  <!-- Tagline -->
+  <text x="600" y="510" text-anchor="middle" font-family="'IBM Plex Sans', sans-serif" font-weight="400" font-size="22" fill="#555555">give it a number. go to sleep.</text>
+
+  <!-- Bottom branding -->
+  <text x="48" y="640" font-family="'IBM Plex Mono', monospace" font-weight="400" font-size="16" fill="#AAAAAA">github.com/jmilinovich/goal-md</text>
+
+</svg>
