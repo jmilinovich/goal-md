@@ -1,6 +1,6 @@
 node_modules/
 out/
+!out/video.mp4
 dist/
 .remotion/
-*.mp4
 *.webm
