@@ -49,6 +49,8 @@ That's when I knew this was a real pattern. If you can construct a fitness funct
 
 CLAUDE.md is a manual. It tells an agent *how to work* in your repo. GOAL.md is a reward function. It tells an agent *what "better" means* and gives it a loop to get there. The agent measures, diagnoses, acts, and verifies on its own. You don't need to be in the room.
 
+The harder problem is when "better" has no existing metric. Test coverage has `pytest --cov`. But documentation quality? API trustworthiness? Code health? You have to *construct* the metric first. That's what a GOAL.md does — it gives the agent both the ruler and the thing to measure.
+
 ## The five elements
 
 ### 1. Fitness function
@@ -182,10 +184,10 @@ These aren't just documentation — they're the few-shot examples an agent uses 
 
 | Project | Domain | Metric | Mode | Link |
 |---------|--------|--------|------|------|
+| docs-quality | React component lib docs | Dual: docs quality + instrument quality | Split/Converge | [`examples/docs-quality.md`](examples/docs-quality.md) |
 | browser-grid | Playwright plugin | 10-criterion checklist | Converge | [`examples/browser-grid.md`](examples/browser-grid.md) |
 | api-test-coverage | REST API testing | Coverage score (pytest --cov) | Converge | [`examples/api-test-coverage.md`](examples/api-test-coverage.md) |
 | perf-optimization | Web service perf | Latency/throughput composite (wrk + k6) | Continuous | [`examples/perf-optimization.md`](examples/perf-optimization.md) |
-| docs-quality | React component lib docs | Dual: docs quality + instrument quality | Split/Converge | [`examples/docs-quality.md`](examples/docs-quality.md) |
 
 More examples welcome. Open a PR — more variety here means better GOAL.md files for everyone's projects.
 
