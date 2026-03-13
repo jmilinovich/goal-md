@@ -11,27 +11,28 @@
   <!-- Top accent stripe -->
   <rect width="1200" height="4" fill="#0055FF" />
 
-  <!-- GOAL.md headline — centered -->
-  <text x="600" y="200" text-anchor="middle" font-family="'IBM Plex Sans', sans-serif" font-weight="700" font-size="96" letter-spacing="-0.03em" fill="#0055FF">GOAL.md</text>
+  <!-- GOAL.md headline -->
+  <text x="48" y="160" font-family="'IBM Plex Sans', sans-serif" font-weight="700" font-size="88" letter-spacing="-0.03em" fill="#0055FF">GOAL.md</text>
 
   <!-- Tagline -->
-  <text x="600" y="260" text-anchor="middle" font-family="'IBM Plex Sans', sans-serif" font-weight="700" font-size="36" letter-spacing="-0.03em" fill="#000000">give it a number. go to sleep.</text>
+  <text x="48" y="218" font-family="'IBM Plex Sans', sans-serif" font-weight="700" font-size="32" letter-spacing="-0.03em" fill="#000000">give it a number. go to sleep.</text>
 
   <!-- Subtitle -->
-  <text x="600" y="310" text-anchor="middle" font-family="'IBM Plex Sans', sans-serif" font-weight="400" font-size="22" fill="#555555">A fitness function for autonomous coding agents</text>
+  <text x="48" y="264" font-family="'IBM Plex Sans', sans-serif" font-weight="400" font-size="22" fill="#555555">A fitness function for autonomous coding agents</text>
 
-  <!-- Terminal box — centered -->
-  <rect x="200" y="360" width="800" height="110" rx="16" fill="#FAFAFA" stroke="#E0E0E0" stroke-width="1.5" />
+  <!-- Terminal box -->
+  <rect x="48" y="310" width="1104" height="120" rx="16" fill="#FAFAFA" stroke="#E0E0E0" stroke-width="1.5" />
 
   <!-- Terminal dots -->
-  <circle cx="232" cy="392" r="5" fill="#FF3333" opacity="0.8" />
-  <circle cx="250" cy="392" r="5" fill="#FFAA00" opacity="0.8" />
-  <circle cx="268" cy="392" r="5" fill="#00AA44" opacity="0.8" />
+  <circle cx="76" cy="342" r="5" fill="#FF3333" opacity="0.8" />
+  <circle cx="94" cy="342" r="5" fill="#FFAA00" opacity="0.8" />
+  <circle cx="112" cy="342" r="5" fill="#00AA44" opacity="0.8" />
 
   <!-- Terminal command -->
-  <text x="232" y="440" font-family="'IBM Plex Mono', monospace" font-weight="400" font-size="20" fill="#555555"><tspan fill="#0055FF">$</tspan> claude "Read goal-md and write me a GOAL.md"</text>
+  <text x="76" y="400" font-family="'IBM Plex Mono', monospace" font-weight="400" font-size="20" fill="#555555">
+    <tspan fill="#0055FF">$ </tspan>claude "Read goal-md and write me a GOAL.md"</text>
 
   <!-- Bottom branding -->
-  <text x="600" y="630" text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-weight="400" font-size="16" fill="#AAAAAA">github.com/jmilinovich/goal-md</text>
+  <text x="48" y="620" font-family="'IBM Plex Mono', monospace" font-weight="400" font-size="16" fill="#AAAAAA">github.com/jmilinovich/goal-md</text>
 
 </svg>
