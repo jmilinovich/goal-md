@@ -13,6 +13,8 @@
 > "are my docs good?" is not a metric. "is this test suite trustworthy?" is not a metric. "is this API reliable?" is not a metric.
 >
 > you have to build the ruler before you can measure.
+>
+> this is what i've been building on top of @karpathy's autoresearch idea.
 
 ---
 
@@ -64,8 +66,11 @@ Also attach as fallback image if video not supported: `assets/social/tweets/scen
 
 > give it a number. go to sleep.
 >
-> the pattern, template, and examples are all open source. the docs-quality example alone is worth reading — it shows how to score something that has no natural metric.
+> the whole thing is one prompt away. paste this into claude, cursor, windsurf, or any agent:
 >
-> point an agent at the repo and it writes a GOAL.md for your project in one pass.
+> "Read github.com/jmilinovich/goal-md — read the template and examples. Then write me a GOAL.md for this repo and start working on it."
+>
+> the docs-quality example alone is worth reading — it shows how to score something that has no natural metric.
 >
 > github.com/jmilinovich/goal-md
+>
