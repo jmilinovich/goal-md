@@ -6,6 +6,13 @@
 
 Give an AI agent a number to make go up and a loop to do it in. Then go to sleep.
 
+**One prompt. Any agent.** Paste this into Claude, Cursor, Windsurf, or any coding agent:
+
+```
+Read github.com/jmilinovich/goal-md — read the template and examples.
+Then write me a GOAL.md for this repo and start working on it.
+```
+
 [![Watch the explainer](assets/social/score-card.png)](video/out/video.mp4)
 
 > [Watch the 2-minute explainer video](video/out/video.mp4)
