@@ -18,7 +18,7 @@ GOAL.md is the pattern for doing that. One file you drop into a repo that turns 
 
 ## How I stumbled into this
 
-I had 30 Playwright tests for a routing system. Half were broken, no way to tell which. I wanted Claude to fix them, not once but in a loop. Problem is there's no loss function for "is this test infrastructure trustworthy?" I had to build the ruler before I could measure.
+I had 30 Playwright tests for a routing system. Half were broken, no way to tell which. I wanted Claude to fix them, but the real problem wasn't "fix the tests." It was: how do you even measure whether test infrastructure is trustworthy? There's no coverage tool for that. No test runner. Nothing. I had to build the ruler before I could measure.
 
 ```
 ═══════════════════════════════════════════
@@ -31,9 +31,19 @@ I had 30 Playwright tests for a routing system. Half were broken, no way to tell
     consistency                  ✗ 0.38
 ```
 
-So I wrote a file that told Claude: here's the score, here's how to make it go up, here's when to stop. Went to bed. Woke up to 12 commits, each atomic, each pushing the score higher. 47 → 83.
+So I constructed a metric: four weighted components that together define "routing confidence." Then I wrote a file that told Claude: here's the score, here's how to make it go up, here's when to stop. Went to bed. Woke up to 12 commits, each atomic, each pushing the score higher. 47 → 83.
 
-That file became GOAL.md. The wild part wasn't the pattern itself, it was waking up to a repo that was genuinely better than when I left it.
+That file became GOAL.md. The wild part wasn't the loop — any agent can loop. It was that I had to *construct the ruler* before the agent could measure anything. Once it had a number, it knew exactly what to do.
+
+## The real test
+
+The Playwright story convinced me this works. But tests are at least somewhat measurable — they pass or fail. The real question was: does this generalize to things that seem genuinely immeasurable?
+
+Documentation quality. "Are my docs actually good?" There's no test runner for that. No coverage tool. No `pytest --cov` equivalent. Just vibes. The [`docs-quality`](examples/docs-quality.md) GOAL.md had to construct the entire measurement apparatus from scratch: a prop-accuracy checker, an example compiler, a calibrated linter. Three tools that didn't exist, producing a score that didn't exist, for a quality dimension that most teams just eyeball.
+
+But here's the part that surprised me. The agent needed a *dual scoring system* — one score for documentation quality, another for instrument quality. Because the linter itself was broken. Vale was flagging `onChange` as a spelling error. A naive agent would "fix" the docs to satisfy the linter, making them worse. So the GOAL.md scored the measuring tools separately: "how much can we trust the docs score?" The agent fixed its own telescope first, then used that telescope to fix the docs. It was building the ruler and measuring with it at the same time, and the dual-score pattern kept it from fooling itself.
+
+That's when I knew this was a real pattern. If you can construct a fitness function for documentation quality — something with no natural metric at all — you can construct one for anything.
 
 ## Why not just a good CLAUDE.md?
 
