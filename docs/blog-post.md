@@ -16,6 +16,16 @@ Most software isn't like that. There is no pre-existing loss function for "is th
 
 ---
 
+The routing story was proof of concept. The moment I knew the pattern was general was when I watched it work on documentation quality. Not test coverage — documentation. "Are these docs actually good?" isn't remotely a number. There's no test runner for prose quality, no coverage metric for "do the prop tables match the actual TypeScript interfaces."
+
+But it turns out you can build that ruler too. A scoring script that checks prop accuracy against the source code, tests whether code examples actually compile, measures whether every public component has a doc page with the right sections. Suddenly "are the docs good?" has a score: 45 out of 100.
+
+And here's what made it interesting: the measurement tools themselves were broken. The linter flagged `onChange` as a spelling error. The prop checker couldn't parse `Pick<>` types. An agent that trusted those tools blindly would do the wrong work — "fixing" docs to satisfy a broken linter instead of fixing the docs that were actually wrong. So the GOAL.md had two scores: one for the docs, one for the instruments. The agent calibrated the telescope, then pointed it at the sky.
+
+That was the moment I stopped thinking of this as a testing trick. Building the ruler *is* the trick. The loop is just measure-act-verify — that part's almost boring. The hard part, the part that unlocks autonomous work on things nobody thought were measurable, is constructing the number in the first place.
+
+---
+
 The pattern I landed on has five elements, and they all live in a single file called **GOAL.md** that you drop into a repo.
 
 First, a **fitness function**. Not a description of quality. A script that outputs a number. The agent runs it, gets a score, and now has something concrete to optimize. This sounds obvious but it's the part most people skip. They write elaborate instructions about what they want and then wonder why the agent spins its wheels. A number changes everything. It turns an open-ended conversation into a closed-loop optimization.
@@ -28,7 +38,7 @@ Fourth, an **operating mode** — converge, continuous, or supervised. Converge 
 
 Fifth, **constraints**. The lines the agent must not cross. Never fabricate test results. Never modify credentials. Always commit atomically so reverts are clean. Without these, the agent will absolutely find creative ways to make the number go up that you did not intend. Goodhart's Law applies to silicon as much as carbon.
 
-The piece that surprised me most was what I ended up calling **split scoring**. When I was working on those Playwright tests, I actually had two metrics: "is the routing working?" and "can we trust the tests that check the routing?" The agent needed permission to improve the instrument — add tests, fix detection logic, sharpen the measurement — without gaming the outcome. It was building its own telescope while simultaneously using it to observe. A single locked metric can't handle that. A dual-score system, where the agent can sharpen the instrument but not redefine what it's pointed at, turned out to be the key innovation.
+The piece that surprised me most was what I ended up calling **split scoring**. The docs example is where it clicked. The GOAL.md had two metrics: "are the docs good?" and "can we trust the tools that check the docs?" Vale was flagging `onChange` as misspelled. The prop checker silently skipped any component that used `Pick<>` types. An agent that trusted those tools at face value would spend half its iterations chasing false positives — or worse, rewriting correct documentation to make a broken linter happy. So the agent got permission to improve the instrument — add terms to the linter vocabulary, teach the prop checker new type patterns — without redefining what "good docs" means. It calibrated the telescope, then pointed it at the sky. A single locked metric can't handle that. A dual-score system, where the agent can sharpen the instrument but not redefine what it's pointed at, turned out to be the key innovation.
 
 ---
 
