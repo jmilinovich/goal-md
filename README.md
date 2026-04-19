@@ -6,6 +6,18 @@
 
 Give an AI agent a number to make go up and a loop to do it in. Then go to sleep.
 
+> ### ⚠️ Notice: not affiliated with any cryptocurrency
+>
+> A `$GOAL` memecoin on pump.fun references this project and has my GitHub handle attached as "creator" — pump.fun auto-routes creator fees to the GitHub account of any project a token references.
+>
+> **I did not launch the token, am not affiliated with it, and have taken no money from it.** Any tokens purchased with routed creator fees have been burned on-chain ([verify tx](https://solscan.io/tx/3fm2UvXPqkhZtCS8dMZ5gnSxQ78covjUEzgVgBuNWDZkWvwNTUxxczD5FCDevALQAfH5evUQhcepnhs9nw6qPZXj)).
+>
+> **goal-md is an open-source specification, not a cryptocurrency.** There is no associated token and none is planned. Do not buy any coin claiming to represent this project.
+>
+> *Last updated: 2026-04-18*
+
+---
+
 **One prompt. Any agent.** Paste this into Claude, Cursor, Windsurf, or any coding agent:
 
 ```
